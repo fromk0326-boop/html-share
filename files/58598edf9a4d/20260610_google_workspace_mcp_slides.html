@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1400, minimum-scale=0.1, maximum-scale=3.0">
+  <title>AI活用の第一歩！成果を出すためのGoogle Workspace＆データ管理術</title>
+  <style>
+/* ===== SLIDE ENGINE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;font-family:var(--font-primary,'Meiryo UI','Hiragino Sans',sans-serif);background:var(--color-bg,#0a0a0a);color:var(--color-text,#e5e7eb);-webkit-font-smoothing:antialiased}
+.slide-deck{width:100%;overflow:visible}
+.slide{width:100vw;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:var(--slide-padding,60px 80px);position:relative;overflow:hidden}
+.slide-inner{width:100%;max-width:var(--slide-max-width,1400px);height:100%;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1}
+.progress-bar{position:fixed;top:0;left:0;height:3px;background:var(--color-accent,#4285f4);z-index:1000;transition:width .1s}
+
+/* ===== THEME ===== */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+:root{
+  --color-bg:#0f1117;--color-bg-alt:#1a1d27;--color-surface:#1a1d27;--color-surface-alt:#252840;
+  --color-text:#e5e7eb;--color-text-secondary:#d1d5db;--color-text-muted:#9ca3af;--color-text-subtle:rgba(156,163,175,.5);
+  --color-accent:#4285f4;--color-accent-light:rgba(66,133,244,.15);--color-accent-dim:rgba(66,133,244,.08);
+  --color-border:rgba(255,255,255,.09);--color-border-strong:rgba(255,255,255,.18);--color-border-accent:rgba(66,133,244,.4);
+  --color-success:#34a853;--color-warning:#fbbc04;--color-danger:#ea4335;
+  --color-taxsys:#1a73e8;--color-taxsys-dim:rgba(26,115,232,.1);
+  --color-nav-bg:rgba(0,0,0,.6);
+  --font-primary:'Noto Sans JP','Hiragino Kaku Gothic ProN','Meiryo UI',sans-serif;
+  --font-weight-light:300;--font-weight-normal:400;--font-weight-medium:500;--font-weight-bold:700;--font-weight-black:900;
+  --text-xs:18px;--text-sm:20px;--text-base:22px;--text-lg:29px;--text-xl:33px;--text-2xl:46px;--text-3xl:57px;--text-4xl:79px;--text-5xl:102px;--text-hero:137px;
+  --space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:32px;--space-2xl:48px;--space-3xl:64px;
+  --slide-padding:60px 80px;--slide-max-width:1400px;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+}
+
+/* slide-title */
+.slide-title{background:#0a0a0a;text-align:left;color:#f0f0f0;position:relative;overflow:hidden}
+.slide-title::before{content:'';position:absolute;top:-30%;right:-20%;width:80%;height:160%;background:radial-gradient(ellipse at 30% 50%,rgba(66,133,244,.35) 0%,transparent 60%),radial-gradient(ellipse at 70% 30%,rgba(52,168,83,.2) 0%,transparent 55%),radial-gradient(ellipse at 50% 80%,rgba(251,188,4,.15) 0%,transparent 50%);filter:blur(40px);z-index:0;animation:auroraShift 12s ease-in-out infinite alternate}
+@keyframes auroraShift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-20px,10px) scale(1.05)}100%{transform:translate(10px,-15px) scale(.98)}}
+.slide-title .slide-inner{z-index:1;justify-content:flex-end;padding-bottom:var(--space-3xl)}
+.slide-title .title-main{font-size:var(--text-5xl);font-weight:var(--font-weight-black);line-height:1.1;letter-spacing:-.02em;margin-bottom:var(--space-xl);color:#fff}
+.slide-title .title-sub{font-size:var(--text-xl);color:rgba(255,255,255,.7);font-weight:var(--font-weight-normal);line-height:1.5}
+.slide-title .title-meta{font-size:var(--text-base);color:rgba(255,255,255,.45);margin-top:var(--space-xl);text-align:right}
+
+/* slide-chapter */
+.slide-chapter{background:var(--color-bg);justify-content:center}
+.slide-chapter .chapter-number{font-size:var(--text-hero);font-weight:var(--font-weight-black);color:var(--color-accent);line-height:1;margin-bottom:var(--space-md);opacity:.2}
+.slide-chapter .chapter-title{font-size:var(--text-4xl);font-weight:var(--font-weight-black);line-height:1.2;color:var(--color-text)}
+.slide-chapter .chapter-desc{font-size:var(--text-lg);color:var(--color-text-muted);margin-top:var(--space-md)}
+
+/* slide-content */
+.slide-content{background:var(--color-bg)}
+.slide-content .content-heading{font-size:var(--text-3xl);font-weight:var(--font-weight-black);margin-bottom:var(--space-xl);color:var(--color-text)}
+
+/* slide-timeline */
+.slide-timeline{background:var(--color-bg)}
+.slide-timeline .timeline-heading{font-size:var(--text-3xl);font-weight:var(--font-weight-black);margin-bottom:var(--space-2xl)}
+
+/* slide-end */
+.slide-end{background:#0a0a0a;text-align:center;justify-content:center;color:#f0f0f0;position:relative;overflow:hidden}
+.slide-end::before{content:'';position:absolute;top:-30%;left:-20%;width:80%;height:160%;background:radial-gradient(ellipse at 40% 50%,rgba(66,133,244,.3) 0%,transparent 60%),radial-gradient(ellipse at 70% 40%,rgba(52,168,83,.2) 0%,transparent 50%);filter:blur(40px);z-index:0}
+.slide-end .slide-inner{z-index:1}
+
+/* slide-footer */
+.slide-footer{position:absolute;bottom:24px;left:80px;right:80px;display:flex;justify-content:space-between;align-items:flex-end;z-index:2}
+.slide-footer .footer-num{font-size:var(--text-sm);color:var(--color-text-subtle);font-variant-numeric:tabular-nums}
+
+/* utilities */
+.text-accent{color:var(--color-accent)}.text-muted{color:var(--color-text-muted)}.text-subtle{color:var(--color-text-subtle)}
+.text-success{color:var(--color-success)}.text-warning{color:var(--color-warning)}.text-danger{color:var(--color-danger)}.text-white{color:#fff}
+.text-center{text-align:center}.font-bold{font-weight:var(--font-weight-bold)}.font-black{font-weight:var(--font-weight-black)}
+.mt-sm{margin-top:var(--space-sm)}.mt-md{margin-top:var(--space-md)}.mt-lg{margin-top:var(--space-lg)}.mt-xl{margin-top:var(--space-xl)}.mt-2xl{margin-top:var(--space-2xl)}
+.mb-sm{margin-bottom:var(--space-sm)}.mb-md{margin-bottom:var(--space-md)}.mb-lg{margin-bottom:var(--space-lg)}.mb-xl{margin-bottom:var(--space-xl)}
+.tag{display:inline-block;padding:var(--space-xs) var(--space-md);border:1px solid var(--color-border);border-radius:999px;font-size:var(--text-xs);font-weight:var(--font-weight-medium);color:var(--color-text-muted)}
+.tag-accent{border-color:var(--color-accent);color:var(--color-accent);background:var(--color-accent-dim)}
+.divider{width:60px;height:3px;background:var(--color-accent);border:none;margin:var(--space-lg) 0}
+
+/* ===== COMPONENTS ===== */
+.event-badge{display:inline-block;background:rgba(66,133,244,.15);border:1px solid var(--color-accent);border-radius:6px;padding:4px 14px;font-size:var(--text-sm);font-weight:700;letter-spacing:.08em;color:var(--color-accent);margin-bottom:var(--space-lg)}
+
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);margin-top:var(--space-lg)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);margin-top:var(--space-md)}
+.col-card{padding:var(--space-lg);border-radius:var(--radius-md);border:1.5px solid var(--color-border);background:var(--color-surface)}
+.col-card.accent{border-color:var(--color-accent);background:rgba(66,133,244,.08)}
+.col-card.success{border-color:var(--color-success);background:rgba(52,168,83,.08)}
+.col-card.danger{border-color:var(--color-danger);background:rgba(234,67,53,.08)}
+.col-card.warning{border-color:var(--color-warning);background:rgba(251,188,4,.08)}
+.col-card.taxsys{border-color:var(--color-taxsys);background:var(--color-taxsys-dim)}
+.col-card-label{font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;color:var(--color-accent);margin-bottom:var(--space-sm)}
+.col-card-title{font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-sm)}
+
+.flow-row{display:flex;align-items:center;gap:var(--space-sm);margin-top:var(--space-lg);flex-wrap:wrap}
+.flow-item{flex:1;min-width:110px;padding:var(--space-md);border:1.5px solid var(--color-border);border-radius:var(--radius-md);text-align:center;font-size:var(--text-sm);background:var(--color-surface)}
+.flow-item.accent{border-color:var(--color-accent);background:rgba(66,133,244,.1)}
+.flow-item.success{border-color:var(--color-success);background:rgba(52,168,83,.1)}
+.flow-item.taxsys{border-color:var(--color-taxsys);background:rgba(26,115,232,.1)}
+.flow-arrow{color:var(--color-accent);font-size:var(--text-xl);font-weight:700;flex-shrink:0}
+
+.code-block{background:#0d1117;border:1px solid #30363d;border-radius:var(--radius-sm);padding:var(--space-md) var(--space-lg);font-family:'SF Mono','Consolas',monospace;font-size:var(--text-xs);line-height:1.9;color:#c9d1d9}
+.code-comment{color:#8b949e}.code-key{color:#ff7b72}.code-string{color:#a5d6ff}.code-green{color:#7ee787}
+
+.toc-link{color:inherit;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s}
+.toc-link:hover{border-bottom-color:var(--color-accent)}
+
+.comp-table{width:100%;border-collapse:collapse;margin-top:var(--space-lg)}
+.comp-table th{padding:14px 20px;font-size:var(--text-sm);font-weight:700;color:var(--color-text-muted);border-bottom:2px solid var(--color-border);text-align:center}
+.comp-table th.accent{color:var(--color-accent);border-bottom-color:var(--color-accent)}
+.comp-table th.taxsys{color:var(--color-taxsys);border-bottom-color:var(--color-taxsys)}
+.comp-table td{padding:12px 20px;font-size:var(--text-sm);border-bottom:1px solid var(--color-border);text-align:center}
+.comp-table td:first-child{text-align:left;font-weight:700;color:var(--color-text)}
+.comp-table .good{color:var(--color-success);font-weight:700}
+.comp-table .bad{color:var(--color-danger)}
+.comp-table .mid{color:var(--color-warning)}
+.comp-table tr:hover td{background:rgba(255,255,255,.02)}
+
+/* ナビ */
+.fixed-nav{position:fixed;top:28px;left:28px;z-index:9999}
+.fixed-nav-btn{width:48px;height:48px;border-radius:50%;border:none;background:var(--color-accent);color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.fixed-nav-btn:hover{transform:scale(1.1)}
+.fixed-nav-menu{display:none;position:absolute;top:60px;left:0;background:#1a1a1a;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 0;min-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.fixed-nav.open .fixed-nav-menu{display:block}
+.fixed-nav-menu a{display:flex;align-items:center;gap:10px;padding:12px 22px;color:#e5e5e5;text-decoration:none;font-size:16px;transition:background .15s}
+.fixed-nav-menu a:hover{background:rgba(255,255,255,.08)}
+.fixed-nav-menu a .nav-num{color:var(--color-accent);font-weight:700;font-size:13px;min-width:28px}
+html{scroll-behavior:smooth;overflow-y:auto}
+button,a{-webkit-tap-highlight-color:transparent}
+  </style>
+</head>
+<body>
+
+<!-- ナビゲーション -->
+<div class="fixed-nav" id="fixedNav">
+  <button class="fixed-nav-btn" onclick="document.getElementById('fixedNav').classList.toggle('open')">☰</button>
+  <div class="fixed-nav-menu">
+    <a href="#top"><span class="nav-num">▶</span>タイトル</a>
+    <a href="#profile"><span class="nav-num">◎</span>自己紹介</a>
+    <a href="#agenda"><span class="nav-num">◎</span>今日の流れ</a>
+    <a href="#ch01"><span class="nav-num">01</span>Google Workspace をデータ基盤にする</a>
+    <a href="#problem"><span class="nav-num">→</span>なぜデータが活かせないのか</a>
+    <a href="#google-strength"><span class="nav-num">→</span>Googleの4つの強み</a>
+    <a href="#folder-design"><span class="nav-num">→</span>フォルダ・命名規則の設計</a>
+    <a href="#after-organize"><span class="nav-num">→</span>整理後の全体像（Taxis / MCP）</a>
+    <a href="#ch03"><span class="nav-num">02</span>Google MCP × Claude Code</a>
+    <a href="#mcp-concept"><span class="nav-num">→</span>MCPとは何か</a>
+    <a href="#mcp-services"><span class="nav-num">→</span>できること</a>
+    <a href="#mcp-cases"><span class="nav-num">→</span>実例3本</a>
+    <a href="#end"><span class="nav-num">▶</span>まとめ・CTA</a>
+  </div>
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slide-deck">
+
+  <!-- ===== TITLE ===== -->
+  <section id="top" class="slide slide-title">
+    <div class="slide-inner">
+      <div style="margin-bottom:var(--space-md)">
+        <span class="event-badge">Google Workspace × TaxSys × Claude Code ／ AI活用ウェビナー</span>
+      </div>
+      <div class="title-main">AI活用の第一歩！<br><span style="color:var(--color-accent)">成果を出すための<br>Google Workspace＆データ管理術</span></div>
+      <div class="title-sub">整理されたデータが、AIを動かす。Google Workspace・TaxSys・Claude Codeで実現する実務自動化</div>
+      <div class="title-meta">
+        畠山謙人 公認会計士・税理士 ／ 2026.06.15（月）<br>
+        <span style="font-size:var(--text-sm)">申込: <a href="https://zeirisee.so-labo.co.jp/U39/seminar/1617/" style="color:rgba(255,255,255,.5);text-decoration:none">zeirisee.so-labo.co.jp/U39/seminar/1617/</a></span>
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 自己紹介 ===== -->
+  <section id="profile" class="slide slide-timeline">
+    <div class="slide-inner">
+      <h2 class="timeline-heading">自己紹介</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 48px;margin-top:var(--space-md)">
+        <div style="display:flex;gap:16px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--color-border)">
+          <div style="color:var(--color-accent);font-weight:700;font-size:16px;min-width:60px;padding-top:2px">2010年</div>
+          <div><div style="font-size:22px;font-weight:700">会計士試験合格</div></div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--color-border)">
+          <div style="color:var(--color-accent);font-weight:700;font-size:16px;min-width:60px;padding-top:2px">2019年</div>
+          <div><div style="font-size:22px;font-weight:700">サイバーエージェント</div><div style="font-size:12px;color:var(--color-text-muted);margin-top:2px">メガベンチャーの管理部門。データドリブン経営を現場で体感</div></div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--color-border)">
+          <div style="color:var(--color-accent);font-weight:700;font-size:16px;min-width:60px;padding-top:2px">2014年</div>
+          <div><div style="font-size:22px;font-weight:700">監査法人トーマツ</div><div style="font-size:12px;color:var(--color-text-muted);margin-top:2px">Big4監査法人。財務報告の本質を学ぶ</div></div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--color-border)">
+          <div style="color:var(--color-accent);font-weight:700;font-size:16px;min-width:60px;padding-top:2px">2020年</div>
+          <div><div style="font-size:22px;font-weight:700">税理士法人赤坂共同</div><div style="font-size:12px;color:var(--color-text-muted);margin-top:2px">税務専門。申告・節税・組織再編</div></div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:flex-start;padding:10px 0;border-bottom:2px solid var(--color-accent)">
+          <div style="color:var(--color-accent);font-weight:700;font-size:16px;min-width:60px;padding-top:2px">2025年</div>
+          <div><div style="font-size:22px;font-weight:700">畠山謙人税理士事務所　独立</div><div style="font-size:12px;color:var(--color-text-muted);margin-top:2px">スタッフ0人 ／ 顧問先60社。AIが唯一のスタッフ。ナイル㈱監査等委員</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-self:end;padding-bottom:4px">
+          <div style="text-align:center;padding:16px 8px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-surface)">
+            <div style="font-size:32px;font-weight:900;color:var(--color-accent)">60社</div>
+            <div style="font-size:12px;color:var(--color-text-muted);margin-top:4px">顧問先</div>
+          </div>
+          <div style="text-align:center;padding:16px 8px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-surface)">
+            <div style="font-size:32px;font-weight:900;color:var(--color-accent)">711万</div>
+            <div style="font-size:12px;color:var(--color-text-muted);margin-top:4px">X imp 累計</div>
+          </div>
+          <div style="text-align:center;padding:16px 8px;border:1px solid var(--color-border);border-radius:8px;background:var(--color-surface)">
+            <div style="font-size:32px;font-weight:900;color:var(--color-accent)">3ヶ月</div>
+            <div style="font-size:12px;color:var(--color-text-muted);margin-top:4px">Claude Code歴</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 今日の流れ ===== -->
+  <section id="agenda" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">今日の流れ</h2>
+      <div style="display:grid;grid-template-columns:80px auto 1fr;gap:var(--space-xs) var(--space-lg);align-items:baseline;font-size:var(--text-lg);line-height:2.8;margin-top:var(--space-lg)">
+        <span class="text-muted" style="font-size:var(--text-base)">15分</span>
+        <span class="text-accent font-bold">01</span>
+        <span><a href="#ch01" class="toc-link">Google Workspace をデータ基盤にする</a> <span class="text-muted" style="font-size:var(--text-base)">— なぜデータが活かせないのか・Googleの強み・整理後の全体像</span></span>
+
+        <span class="text-muted" style="font-size:var(--text-base)">15分</span>
+        <span class="text-accent font-bold">02</span>
+        <span><a href="#ch03" class="toc-link">Google MCP × Claude Code</a> <span class="text-muted" style="font-size:var(--text-base)">— Taxisで対応できない領域をさらに自動化する</span></span>
+
+        <span class="text-muted" style="font-size:var(--text-base)">5分</span>
+        <span class="text-muted">▶</span>
+        <span>まとめ・Q&amp;A</span>
+      </div>
+      <div style="margin-top:var(--space-xl);padding:var(--space-md) var(--space-lg);border-left:4px solid var(--color-accent);background:rgba(66,133,244,.06);border-radius:0 var(--radius-md) var(--radius-md) 0">
+        <strong>今日のゴール：</strong>「AIを動かすにはデータ整理が先」という原則を理解し、<strong>整理→記帳（Taxis）→それ以外の自動化（MCP）</strong>という流れを持ち帰る
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 第1章：Google Workspace をデータ基盤にする  -->
+  <!-- ========================================== -->
+  <section id="ch01" class="slide slide-chapter">
+    <div class="slide-inner">
+      <div class="chapter-number">01</div>
+      <div class="chapter-title">Google Workspace を<br>データ基盤にする</div>
+      <div class="chapter-desc">AIを活かすには、まずデータが「整っている」こと</div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- なぜデータが活かせないか -->
+  <section id="problem" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">なぜ、データはあるのに活かせないのか</h2>
+      <div class="two-col">
+        <div>
+          <div style="font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;color:var(--color-text-muted);margin-bottom:var(--space-sm)">税理士事務所の現実</div>
+          <div class="col-card danger" style="margin-bottom:var(--space-md)">
+            <div style="font-size:var(--text-sm);line-height:2.4;color:var(--color-text-secondary)">
+              📊 会計ソフトの数字 → <strong>会計ソフトの中</strong><br>
+              📄 書類・領収書 → <strong>バラバラのフォルダ</strong><br>
+              💬 面談の記録 → <strong>議事録ファイル</strong><br>
+              📧 メールの履歴 → <strong>Outlookの受信箱</strong><br>
+              📅 予定・期限 → <strong>担当者の手帳</strong>
+            </div>
+          </div>
+          <div style="padding:var(--space-md);border:1.5px solid var(--color-danger);border-radius:var(--radius-md);background:rgba(234,67,53,.06);font-size:var(--text-sm);color:var(--color-danger);font-weight:700">
+            顧客の全体像を把握するために、毎回いくつもの画面を開いて頭の中で繋ぎ合わせる
+          </div>
+        </div>
+        <div>
+          <div style="font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;color:var(--color-success);margin-bottom:var(--space-sm)">理想の状態</div>
+          <div class="col-card success" style="margin-bottom:var(--space-md)">
+            <div style="font-size:var(--text-sm);line-height:2.4;color:var(--color-text-secondary)">
+              📁 顧客フォルダを開けば<br>
+              　→ 数字も書類も議事録も<strong>全部ここにある</strong><br><br>
+              🤖 AIは「どこを見ればいいか」を知っている<br>
+              　→ <strong>日本語で聞くだけで答えが返る</strong>
+            </div>
+          </div>
+          <div style="padding:var(--space-md);border:1.5px solid var(--color-success);border-radius:var(--radius-md);background:rgba(52,168,83,.06);font-size:var(--text-sm);color:var(--color-success);font-weight:700">
+            「データ量」の問題ではない。顧客単位で<strong>データが揃っていないこと</strong>が問題
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- Googleの4つの強み -->
+  <section id="google-strength" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">なぜ Google Workspace がデータ基盤として優れているか</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-top:var(--space-lg)">
+        <div class="col-card" style="border-color:#ea4335;background:rgba(234,67,53,.05)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--space-md)">
+            <div style="width:36px;height:36px;border-radius:50%;background:#ea4335;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:18px;flex-shrink:0">1</div>
+            <div style="font-size:var(--text-lg);font-weight:700">クラウドネイティブ</div>
+          </div>
+          <p style="font-size:var(--text-sm);color:var(--color-text-muted)">全データがクラウド上に存在。AIがAPIで直接アクセス・読み書きできる。ローカルにファイルを落とす手間がゼロ</p>
+        </div>
+        <div class="col-card" style="border-color:#fbbc04;background:rgba(251,188,4,.05)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--space-md)">
+            <div style="width:36px;height:36px;border-radius:50%;background:#fbbc04;display:flex;align-items:center;justify-content:center;font-weight:900;color:#000;font-size:18px;flex-shrink:0">2</div>
+            <div style="font-size:var(--text-lg);font-weight:700">リアルタイム性</div>
+          </div>
+          <p style="font-size:var(--text-sm);color:var(--color-text-muted)">Gmail・カレンダー・Driveは常に最新状態。「昨日のメール」は今日取得しても必ず最新が返ってくる</p>
+        </div>
+        <div class="col-card" style="border-color:#34a853;background:rgba(52,168,83,.05)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--space-md)">
+            <div style="width:36px;height:36px;border-radius:50%;background:#34a853;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:18px;flex-shrink:0">3</div>
+            <div style="font-size:var(--text-lg);font-weight:700">検索性の高さ</div>
+          </div>
+          <p style="font-size:var(--text-sm);color:var(--color-text-muted)">Google検索と同じエンジン。件名・本文・PDF内テキストを横断検索。AIの「情報探し」コストが激減する</p>
+        </div>
+        <div class="col-card" style="border-color:#4285f4;background:rgba(66,133,244,.05)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--space-md)">
+            <div style="width:36px;height:36px;border-radius:50%;background:#4285f4;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:18px;flex-shrink:0">4</div>
+            <div style="font-size:var(--text-lg);font-weight:700">公式MCP・API連携</div>
+          </div>
+          <p style="font-size:var(--text-sm);color:var(--color-text-muted)">Claude CodeとのMCP連携が公式に整備済み。Gmail・Drive・Calendarをまとめて操作できる</p>
+        </div>
+      </div>
+      <div style="margin-top:var(--space-xl);padding:var(--space-md) var(--space-lg);border-left:4px solid var(--color-accent);background:rgba(66,133,244,.06);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:var(--text-lg);font-weight:700">
+        Google Workspaceにデータが揃った後、<span style="color:var(--color-taxsys)">記帳はTaxis</span>・<span style="color:var(--color-accent)">それ以外はMCP+Claude Code</span>で自動化できる
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- フォルダ設計 -->
+  <section id="folder-design" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">顧客フォルダの設計が「土台」になる</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-xl)">TaxSysは顧問先を登録するだけで、Google Drive上に<strong style="color:var(--color-taxsys)">10フォルダ構成</strong>を自動生成する</p>
+      <div class="two-col" style="align-items:flex-start">
+        <div class="col-card">
+          <div style="font-size:var(--text-sm);font-weight:700;color:var(--color-taxsys);margin-bottom:var(--space-md);letter-spacing:.04em">TaxSys 標準フォルダ構成（自動生成）</div>
+          <div class="code-block" style="font-size:15px;line-height:2.0">
+            <span style="color:#7ee787">📁 [顧問先名]/</span><br>
+            <span style="color:#7ee787">&nbsp;&nbsp;📁 01_決算書</span><br>
+            <span style="color:#7ee787">&nbsp;&nbsp;📁 02_申告書</span><br>
+            <span style="color:#7ee787">&nbsp;&nbsp;📁 03_議事録・契約書</span><br>
+            <span style="color:#7ee787">&nbsp;&nbsp;📁 04_給与・社保</span><br>
+            <span style="color:#7ee787">&nbsp;&nbsp;📁 05_月次資料</span><br>
+            <span style="color:#7ee787">&nbsp;&nbsp;📁 06_証憑（領収書・請求書）</span><br>
+            <span style="color:#7ee787">&nbsp;&nbsp;📁 07_顧問先提出資料</span><br>
+            <span style="color:#7ee787">&nbsp;&nbsp;📁 08_内部メモ・調書</span><br>
+            <span style="color:#7ee787">&nbsp;&nbsp;📁 09_その他</span><br>
+            <span style="color:#7ee787">&nbsp;&nbsp;📁 10_証憑自動振分</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+          <div class="col-card">
+            <div style="font-size:var(--text-sm);font-weight:700;color:var(--color-text);margin-bottom:var(--space-md)">このフォルダ設計が生む効果</div>
+            <ul style="list-style:none;padding:0">
+              <li style="padding:10px 0;border-bottom:1px solid var(--color-border);font-size:var(--text-sm);color:var(--color-text-muted)">
+                <span style="color:var(--color-success);font-weight:700;margin-right:8px">✓</span> 担当者が変わっても迷わない
+              </li>
+              <li style="padding:10px 0;border-bottom:1px solid var(--color-border);font-size:var(--text-sm);color:var(--color-text-muted)">
+                <span style="color:var(--color-success);font-weight:700;margin-right:8px">✓</span> AIが「どこを読むか」を判断できる
+              </li>
+              <li style="padding:10px 0;border-bottom:1px solid var(--color-border);font-size:var(--text-sm);color:var(--color-text-muted)">
+                <span style="color:var(--color-success);font-weight:700;margin-right:8px">✓</span> 証憑がAI-OCRで10番フォルダへ自動振分
+              </li>
+              <li style="padding:10px 0;font-size:var(--text-sm);color:var(--color-text-muted)">
+                <span style="color:var(--color-success);font-weight:700;margin-right:8px">✓</span> Claude Codeがファイルを探せるようになる
+              </li>
+            </ul>
+          </div>
+          <div style="padding:var(--space-md) var(--space-lg);border:1.5px solid var(--color-taxsys);border-radius:var(--radius-md);background:rgba(26,115,232,.08);font-size:var(--text-sm);color:var(--color-taxsys);font-weight:700;line-height:1.8">
+            🔵 顧問先登録 → フォルダ自動生成<br>
+            <span style="font-weight:400;color:var(--color-text-muted)">「構造」を手動で作る時代は終わり</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- 整理後の全体像 -->
+  <section id="after-organize" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">データが整ったら、何が変わるか</h2>
+      <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-2xl)">「整理」はゴールではなく、自動化の<strong style="color:var(--color-text)">スタート地点</strong>。整ったデータを2つの経路で活用する</p>
+
+      <div class="two-col" style="align-items:stretch;gap:var(--space-xl)">
+        <!-- 左：記帳→Taxis -->
+        <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+          <div style="font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;color:var(--color-taxsys);text-align:center">経路 A — 記帳・証憑処理</div>
+          <div class="col-card" style="border-color:var(--color-taxsys);background:rgba(26,115,232,.06);flex:1">
+            <div style="text-align:center;margin-bottom:var(--space-lg)">
+              <div style="font-size:48px;margin-bottom:8px">🧾</div>
+              <div style="font-size:var(--text-xl);font-weight:900;color:var(--color-taxsys)">Taxis（タクシス）</div>
+              <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:4px">TAX GROUP専用の記帳・証憑処理システム</div>
+            </div>
+            <ul style="list-style:none;padding:0;font-size:var(--text-sm);line-height:2.2;color:var(--color-text-muted)">
+              <li><span style="color:var(--color-taxsys);margin-right:8px">▸</span> 証憑のAI-OCR読み取り</li>
+              <li><span style="color:var(--color-taxsys);margin-right:8px">▸</span> 勘定科目の自動提案</li>
+              <li><span style="color:var(--color-taxsys);margin-right:8px">▸</span> freee・MFへの連携</li>
+            </ul>
+            <div style="margin-top:var(--space-lg);padding:var(--space-sm) var(--space-md);background:rgba(26,115,232,.12);border-radius:var(--radius-sm);font-size:var(--text-xs);color:var(--color-taxsys);font-weight:700;text-align:center">
+              ← 詳しくはこの後、ソラボさんから
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：それ以外→MCP -->
+        <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+          <div style="font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;color:var(--color-accent);text-align:center">経路 B — 記帳以外の自動化</div>
+          <div class="col-card accent" style="flex:1">
+            <div style="text-align:center;margin-bottom:var(--space-lg)">
+              <div style="font-size:48px;margin-bottom:8px">🤖</div>
+              <div style="font-size:var(--text-xl);font-weight:900;color:var(--color-accent)">Google MCP × Claude Code</div>
+              <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:4px">Taxisが対応できない領域をカバー</div>
+            </div>
+            <ul style="list-style:none;padding:0;font-size:var(--text-sm);line-height:2.2;color:var(--color-text-muted)">
+              <li><span style="color:var(--color-accent);margin-right:8px">▸</span> Gmail読み取り・返信下書き</li>
+              <li><span style="color:var(--color-accent);margin-right:8px">▸</span> カレンダー管理・スケジュール最適化</li>
+              <li><span style="color:var(--color-accent);margin-right:8px">▸</span> 独自業務フローの自動化（何でも）</li>
+            </ul>
+            <div style="margin-top:var(--space-lg);padding:var(--space-sm) var(--space-md);background:rgba(66,133,244,.12);border-radius:var(--radius-sm);font-size:var(--text-xs);color:var(--color-accent);font-weight:700;text-align:center">
+              ← この後、私からご紹介します
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 第2章：Google MCP × Claude Code            -->
+  <!-- ========================================== -->
+  <section id="ch03" class="slide slide-chapter">
+    <div class="slide-inner">
+      <div class="chapter-number">02</div>
+      <div class="chapter-title">Google MCP × Claude Code</div>
+      <div class="chapter-desc">Taxisで対応できない領域を、AIが自律的に自動化する</div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- MCPとは -->
+  <section id="mcp-concept" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">MCP（Model Context Protocol）とは</h2>
+      <div class="two-col">
+        <div>
+          <div style="font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;color:var(--color-danger);margin-bottom:var(--space-sm)">MCPなし（従来）</div>
+          <div class="col-card" style="border-color:var(--color-danger);margin-bottom:var(--space-lg)">
+            <div style="display:flex;align-items:center;justify-content:center;gap:var(--space-lg);padding:var(--space-md) 0;font-size:40px">
+              🤖 <span style="font-size:var(--text-xl);color:var(--color-danger)">✗</span> 📁
+            </div>
+            <div style="font-size:var(--text-xs);color:var(--color-danger);text-align:center;line-height:1.8">
+              ファイルを手動でダウンロード → AIに貼り付け<br>→ 結果を手動でDriveに入力<br><strong>「AIが考えるだけ。操作は人間」</strong>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;color:var(--color-success);margin-bottom:var(--space-sm)">MCPあり（今日の話）</div>
+          <div class="col-card" style="border-color:var(--color-accent);background:rgba(66,133,244,.08);margin-bottom:var(--space-lg)">
+            <div style="display:flex;align-items:center;justify-content:center;gap:var(--space-lg);padding:var(--space-md) 0">
+              <div style="text-align:center"><div style="font-size:40px">🤖</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Claude Code</div></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="color:var(--color-accent);font-size:var(--text-xl);font-weight:700">⇄</div>
+                <div style="background:rgba(66,133,244,.2);border:1px solid var(--color-accent);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;color:var(--color-accent)">MCP</div>
+              </div>
+              <div style="text-align:center"><div style="font-size:40px">📧📁📅</div><div style="font-size:var(--text-xs);color:var(--color-text-muted)">Google Workspace</div></div>
+            </div>
+            <div style="font-size:var(--text-xs);color:var(--color-accent);text-align:center;line-height:1.8">
+              Gmailを読む → 情報を整理 → Driveに保存 → Calendarに登録<br><strong>Claude が自律的に完結させる</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:var(--space-md);padding:var(--space-md) var(--space-lg);border-left:4px solid var(--color-accent);background:rgba(66,133,244,.06);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:var(--text-lg);font-weight:700">
+        MCPは「AIとツールを繋ぐ標準プロトコル」。Anthropicが2024年11月に公開。<span class="text-accent">記帳以外の自動化はすべてここで完結する</span>
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- できること -->
+  <section id="mcp-services" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">Google MCP でできること</h2>
+      <div class="three-col">
+        <div class="col-card" style="border-color:#ea4335;background:rgba(234,67,53,.06)">
+          <div class="col-card-label" style="color:#ea4335">Gmail</div>
+          <ul style="font-size:var(--text-sm);line-height:2.1;list-style:none;padding:0">
+            <li>受信メールの分類・抽出</li>
+            <li>返信・下書き作成</li>
+            <li>顧問先へのリマインド一括送信</li>
+            <li>メール情報をNotionへ転記</li>
+          </ul>
+        </div>
+        <div class="col-card" style="border-color:#4285f4;background:rgba(66,133,244,.06)">
+          <div class="col-card-label" style="color:#4285f4">Google Drive</div>
+          <ul style="font-size:var(--text-sm);line-height:2.1;list-style:none;padding:0">
+            <li>Drive内PDFの読み取り・要約</li>
+            <li>Sheetsへのデータ書き込み</li>
+            <li>Docのドキュメント生成・編集</li>
+            <li>会計ソフトへの連携データ作成</li>
+          </ul>
+        </div>
+        <div class="col-card" style="border-color:#34a853;background:rgba(52,168,83,.06)">
+          <div class="col-card-label" style="color:#34a853">Google Calendar</div>
+          <ul style="font-size:var(--text-sm);line-height:2.1;list-style:none;padding:0">
+            <li>面談予定の検索・作成</li>
+            <li>空き時間の自動確認</li>
+            <li>MTG後タスク自動登録</li>
+            <li>申告期限アラート管理</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:var(--space-xl);padding:var(--space-md) var(--space-lg);border-left:4px solid var(--color-accent);background:rgba(66,133,244,.06);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:var(--text-lg);font-weight:700">
+        これらを <span class="text-accent">「日本語で指示するだけ」</span> で自動実行。コードを書く必要はゼロ
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- 実例3本 -->
+  <section id="mcp-cases" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">実際の活用例（2本）</h2>
+      <div class="two-col" style="margin-top:var(--space-xl);gap:var(--space-2xl)">
+        <div class="col-card accent" style="padding:var(--space-2xl)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--space-xl)">
+            <span style="background:var(--color-accent);color:#fff;padding:4px 14px;border-radius:4px;font-size:14px;font-weight:700">01</span>
+            <div style="font-size:var(--text-lg);font-weight:700">Gmail → Notionにタスク登録</div>
+          </div>
+          <div class="flow-row" style="margin-top:0;flex-direction:column;gap:12px">
+            <div style="width:100%;padding:14px 18px;background:rgba(234,67,53,.12);border:1px solid rgba(234,67,53,.3);border-radius:8px;font-size:var(--text-sm);color:var(--color-text-muted)">📧 面談依頼メール到着</div>
+            <div style="color:var(--color-accent);text-align:center;font-size:var(--text-lg)">↓</div>
+            <div style="width:100%;padding:14px 18px;background:rgba(66,133,244,.12);border:1px solid rgba(66,133,244,.3);border-radius:8px;font-size:var(--text-sm);color:var(--color-text-muted)">🤖 差出人・日時・内容を抽出</div>
+            <div style="color:var(--color-accent);text-align:center;font-size:var(--text-lg)">↓</div>
+            <div style="width:100%;padding:14px 18px;background:rgba(52,168,83,.12);border:1px solid rgba(52,168,83,.3);border-radius:8px;font-size:var(--text-sm);color:var(--color-text-muted)">📝 Notion案件DBに自動登録</div>
+          </div>
+        </div>
+        <div class="col-card accent" style="padding:var(--space-2xl)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--space-xl)">
+            <span style="background:var(--color-accent);color:#fff;padding:4px 14px;border-radius:4px;font-size:14px;font-weight:700">02</span>
+            <div style="font-size:var(--text-lg);font-weight:700">Calendar × 週間レポート</div>
+          </div>
+          <div class="flow-row" style="margin-top:0;flex-direction:column;gap:12px">
+            <div style="width:100%;padding:14px 18px;background:rgba(52,168,83,.12);border:1px solid rgba(52,168,83,.3);border-radius:8px;font-size:var(--text-sm);color:var(--color-text-muted)">📅 今週の予定を確認</div>
+            <div style="color:var(--color-accent);text-align:center;font-size:var(--text-lg)">↓</div>
+            <div style="width:100%;padding:14px 18px;background:rgba(66,133,244,.12);border:1px solid rgba(66,133,244,.3);border-radius:8px;font-size:var(--text-sm);color:var(--color-text-muted)">🤖 稼働・面談・タスクを集計</div>
+            <div style="color:var(--color-accent);text-align:center;font-size:var(--text-lg)">↓</div>
+            <div style="width:100%;padding:14px 18px;background:rgba(251,188,4,.12);border:1px solid rgba(251,188,4,.3);border-radius:8px;font-size:var(--text-sm);color:var(--color-text-muted)">📩 週間レポートを自動送信</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== END ===== -->
+  <section id="end" class="slide slide-end">
+    <div class="slide-inner" style="z-index:1">
+      <div style="margin-bottom:var(--space-lg)"><span class="event-badge">まとめ</span></div>
+      <div style="font-size:var(--text-3xl);font-weight:900;color:#fff;line-height:1.4;margin-bottom:var(--space-2xl)">
+        <span style="color:#4285f4">Google Workspace</span>で整える。<br>
+        <span style="color:var(--color-taxsys)">TaxSys</span>がデータを揃える。<br>
+        <span style="color:var(--color-accent)">Claude Code</span>で動かす。<br>
+        <span style="font-size:var(--text-xl);font-weight:400;color:rgba(255,255,255,.6)">「税務判断は人、実行はAI」の棲み分けで1人60社を回せる時代</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-2xl)">
+        <div style="text-align:center;padding:var(--space-lg);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-lg);background:rgba(255,255,255,.04)">
+          <div style="font-size:32px;margin-bottom:8px;color:#1da1f2">𝕏</div>
+          <div style="font-size:var(--text-xs);color:rgba(255,255,255,.5);font-weight:700;letter-spacing:.08em;margin-bottom:4px">X / Twitter</div>
+          <div style="font-size:var(--text-base);font-weight:700;color:#fff">@kandmybike</div>
+          <div style="font-size:var(--text-xs);color:rgba(255,255,255,.4);margin-top:4px">毎朝8時に税務×AI発信中</div>
+        </div>
+        <div style="text-align:center;padding:var(--space-lg);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-lg);background:rgba(255,255,255,.04)">
+          <div style="font-size:32px;margin-bottom:8px">📧</div>
+          <div style="font-size:var(--text-xs);color:rgba(255,255,255,.5);font-weight:700;letter-spacing:.08em;margin-bottom:4px">メール</div>
+          <div style="font-size:var(--text-sm);font-weight:700;color:#fff">from.k.0326@gmail.com</div>
+          <div style="font-size:var(--text-xs);color:rgba(255,255,255,.4);margin-top:4px">お問い合わせはこちら</div>
+        </div>
+        <div style="text-align:center;padding:var(--space-lg);border:1.5px solid var(--color-accent);border-radius:var(--radius-lg);background:rgba(66,133,244,.1)">
+          <div style="font-size:32px;margin-bottom:8px">📋</div>
+          <div style="font-size:var(--text-xs);color:var(--color-accent);font-weight:700;letter-spacing:.08em;margin-bottom:4px">申込はこちら</div>
+          <div style="font-size:13px;font-weight:700;color:#fff;word-break:break-all"><a href="https://zeirisee.so-labo.co.jp/U39/seminar/1617/" style="color:#fff;text-decoration:none" target="_blank">zeirisee.so-labo.co.jp<br>/U39/seminar/1617/</a></div>
+          <div style="font-size:var(--text-xs);color:rgba(255,255,255,.4);margin-top:4px">6月15日（月）開催</div>
+        </div>
+      </div>
+      <div style="text-align:right;font-size:var(--text-xs);color:rgba(255,255,255,.2)">畠山謙人税理士事務所　©2026</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// ナビ閉じる
+document.addEventListener('click', e => {
+  if (!e.target.closest('#fixedNav')) {
+    document.getElementById('fixedNav').classList.remove('open');
+  }
+});
+// プログレスバー
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('progressBar').style.width = (total > 0 ? scrolled / total * 100 : 0) + '%';
+});
+// 矢印キーでスライド移動
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  function currentIndex() {
+    let best = 0, bestDist = Infinity;
+    slides.forEach((s, i) => {
+      const dist = Math.abs(s.getBoundingClientRect().top);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    return best;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = Math.min(currentIndex() + 1, slides.length - 1);
+      slides[next].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = Math.max(currentIndex() - 1, 0);
+      slides[prev].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+})();
+</script>
+</body>
+</html>
