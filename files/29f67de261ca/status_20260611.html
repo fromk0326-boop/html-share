@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>StartPass × Claude Code 自動化プロジェクト 進捗報告 2026.06.11</title>
+<style>
+  :root {
+    --navy: #1a2b4a;
+    --blue: #2563eb;
+    --blue-light: #eff6ff;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --amber: #d97706;
+    --amber-light: #fffbeb;
+    --gray: #6b7280;
+    --gray-light: #f3f4f6;
+    --border: #e5e7eb;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Meiryo UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: #f8fafc;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 24px 16px;
+  }
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    overflow: hidden;
+  }
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, #2c4a7c 100%);
+    color: #fff;
+    padding: 28px 36px;
+  }
+  header .label {
+    font-size: 12px;
+    letter-spacing: 2px;
+    opacity: .8;
+    margin-bottom: 6px;
+  }
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  header .meta {
+    font-size: 13px;
+    opacity: .85;
+    margin-top: 8px;
+  }
+  .body { padding: 28px 36px 36px; }
+
+  /* サマリーカード */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .card .num {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .card .num small { font-size: 14px; font-weight: 600; }
+  .card .cap {
+    font-size: 11.5px;
+    color: var(--gray);
+    margin-top: 2px;
+  }
+  .card.accent .num { color: var(--blue); }
+
+  h2 {
+    font-size: 16px;
+    color: var(--navy);
+    border-left: 4px solid var(--blue);
+    padding-left: 10px;
+    margin: 28px 0 14px;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  th, td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--gray-light);
+    font-size: 12.5px;
+    color: #374151;
+    white-space: nowrap;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge.done { background: var(--green-light); color: var(--green); }
+  .badge.wait { background: var(--amber-light); color: var(--amber); }
+  .badge.next { background: var(--blue-light); color: var(--blue); }
+  .badge.future { background: var(--gray-light); color: var(--gray); }
+
+  /* ガントチャート */
+  .gantt {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 12px;
+  }
+  .g-row {
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .g-row:last-child { border-bottom: none; }
+  .g-row.head { background: var(--gray-light); font-weight: 700; }
+  .g-row.group {
+    background: #fafbfc;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 11.5px;
+  }
+  .g-row.group .g-label { padding: 5px 12px; }
+  .g-label {
+    padding: 8px 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-right: 1px solid var(--border);
+  }
+  .g-label small { color: var(--gray); font-weight: 400; }
+  .g-track {
+    position: relative;
+    background-image: repeating-linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc(12.5% - 1px),
+      var(--border) calc(12.5% - 1px),
+      var(--border) 12.5%
+    );
+  }
+  .g-weeks {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    height: 100%;
+  }
+  .g-week {
+    text-align: center;
+    padding: 6px 2px;
+    font-size: 10.5px;
+    color: #374151;
+  }
+  .g-week .m { display: block; font-size: 9.5px; color: var(--gray); }
+  .g-week.today { background: var(--blue-light); color: var(--blue); border-radius: 6px 6px 0 0; }
+  .bar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 18px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    padding: 0 6px;
+    overflow: hidden;
+  }
+  .bar.done { background: var(--green); }
+  .bar.wait { background: var(--amber); }
+  .bar.p2 { background: var(--blue); }
+  .bar.p3 { background: #7c3aed; }
+  .bar.fin { background: var(--navy); }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 10px;
+    font-size: 11.5px;
+    color: var(--gray);
+  }
+  .legend .sw {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    margin-right: 5px;
+    vertical-align: -1px;
+  }
+  @media (max-width: 640px) {
+    .g-row { grid-template-columns: 130px 1fr; }
+    .g-label { font-size: 10.5px; padding: 8px 8px; }
+  }
+
+  /* お願い事項 */
+  .ask {
+    background: var(--amber-light);
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 8px;
+    font-size: 13.5px;
+  }
+  .ask strong { color: var(--amber); }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 16px 36px;
+    font-size: 12px;
+    color: var(--gray);
+    display: flex;
+    justify-content: space-between;
+  }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { box-shadow: none; border-radius: 0; max-width: none; }
+  }
+  @media (max-width: 640px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .body, header { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="label">PROGRESS REPORT</div>
+  <h1>StartPass × Claude Code 経理財務自動化プロジェクト</h1>
+  <div class="meta">2026年6月11日時点 ｜ 畠山謙人税理士事務所</div>
+</header>
+
+<div class="body">
+
+  <div class="cards">
+    <div class="card">
+      <div class="num">3<small> / 15</small></div>
+      <div class="cap">自動化完了業務</div>
+    </div>
+    <div class="card">
+      <div class="num">120<small>分/月</small></div>
+      <div class="cap">削減効果（実装済み分）</div>
+    </div>
+    <div class="card accent">
+      <div class="num">800<small>分/月</small></div>
+      <div class="cap">全15業務完了時の削減効果</div>
+    </div>
+    <div class="card">
+      <div class="num">7<small>月末</small></div>
+      <div class="cap">完了目標（再設定）</div>
+    </div>
+  </div>
+
+  <h2>1. 済んでいること（Phase 1）</h2>
+  <table>
+    <tr><th>No.</th><th>業務</th><th>状態</th><th>内容</th></tr>
+    <tr>
+      <td>8</td>
+      <td>外注費推移の更新</td>
+      <td><span class="badge done">完了</span></td>
+      <td>freee APIから自動取得・出力。手作業の転記を撤廃（30分/月削減）</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>月末支払リスト共有</td>
+      <td><span class="badge done">実装済</span></td>
+      <td>freeeから支払予定を取得し差分検出。Slack通知まで実装済み（60分/月削減）</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>経費精算・勤怠リマインド</td>
+      <td><span class="badge wait">実装済・接続待ち</span></td>
+      <td>毎月25日と月初2営業日に自動通知。Slack Webhook URLの設定のみ残（30分/月削減）</td>
+    </tr>
+  </table>
+
+  <h2>2. 今日から着手すること（Phase 2）</h2>
+  <table>
+    <tr><th>No.</th><th>業務</th><th>状態</th><th>内容</th></tr>
+    <tr>
+      <td>10</td>
+      <td>資金増減明細（ローデータ）更新</td>
+      <td><span class="badge next">本日着手</span></td>
+      <td>freee口座明細を自動取得しスプレッドシートへ反映（120分/月削減）</td>
+    </tr>
+    <tr>
+      <td>22</td>
+      <td>資金繰り表更新（Frictio）</td>
+      <td><span class="badge next">6月 第3週</span></td>
+      <td>資金増減データをFrictio更新用に整形（30分/月削減）</td>
+    </tr>
+    <tr>
+      <td>21</td>
+      <td>請求書発行＆振替伝票</td>
+      <td><span class="badge next">6月 第4週</span></td>
+      <td>請求書ドラフトと振替伝票の下書きを自動生成。発行確定は人が承認（90分/月削減）</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>家賃支払いリマインド</td>
+      <td><span class="badge next">6月 第4週</span></td>
+      <td>支払期日前にSlackへ自動リマインド（15分/月削減）</td>
+    </tr>
+  </table>
+
+  <h2>3. ゴールまでのタイムライン（タスク別）</h2>
+  <div class="gantt">
+    <div class="g-row head">
+      <div class="g-label">タスク</div>
+      <div class="g-weeks">
+        <div class="g-week today">6/8週<span class="m">今週</span></div>
+        <div class="g-week">6/15週<span class="m">6月</span></div>
+        <div class="g-week">6/22週<span class="m">6月</span></div>
+        <div class="g-week">6/29週<span class="m">6-7月</span></div>
+        <div class="g-week">7/6週<span class="m">7月</span></div>
+        <div class="g-week">7/13週<span class="m">7月</span></div>
+        <div class="g-week">7/20週<span class="m">7月</span></div>
+        <div class="g-week">7/27週<span class="m">ゴール</span></div>
+      </div>
+    </div>
+
+    <div class="g-row group"><div class="g-label">Phase 1（完了済み・接続のみ）</div><div class="g-track"></div></div>
+    <div class="g-row">
+      <div class="g-label">No.8 外注費推移 <small>（30分/月）</small></div>
+      <div class="g-track"><div class="bar done" style="left:1%; width:23%;">4月完了 ✓</div></div>
+    </div>
+    <div class="g-row">
+      <div class="g-label">No.13 月末支払リスト <small>（60分/月）</small></div>
+      <div class="g-track"><div class="bar done" style="left:1%; width:23%;">4月完了 ✓</div></div>
+    </div>
+    <div class="g-row">
+      <div class="g-label">No.16 経費・勤怠リマインド <small>（30分/月）</small></div>
+      <div class="g-track"><div class="bar wait" style="left:0%; width:12.5%;">Webhook接続</div></div>
+    </div>
+
+    <div class="g-row group"><div class="g-label">Phase 2: 資金まわり（6月中）</div><div class="g-track"></div></div>
+    <div class="g-row">
+      <div class="g-label">No.10 資金増減明細 <small>（120分/月）</small></div>
+      <div class="g-track"><div class="bar p2" style="left:0%; width:12.5%;">本日着手</div></div>
+    </div>
+    <div class="g-row">
+      <div class="g-label">No.22 資金繰り表（Frictio） <small>（30分/月）</small></div>
+      <div class="g-track"><div class="bar p2" style="left:12.5%; width:12.5%;"></div></div>
+    </div>
+    <div class="g-row">
+      <div class="g-label">No.21 請求書発行＆振替伝票 <small>（90分/月）</small></div>
+      <div class="g-track"><div class="bar p2" style="left:25%; width:12.5%;"></div></div>
+    </div>
+    <div class="g-row">
+      <div class="g-label">No.14 家賃支払いリマインド <small>（15分/月）</small></div>
+      <div class="g-track"><div class="bar p2" style="left:25%; width:12.5%;"></div></div>
+    </div>
+
+    <div class="g-row group"><div class="g-label">Phase 3: 入金消込・仕訳系（7月）</div><div class="g-track"></div></div>
+    <div class="g-row">
+      <div class="g-label">No.4/5/11 入金消込 3業務 <small>（180分/月）</small></div>
+      <div class="g-track"><div class="bar p3" style="left:37.5%; width:25%;">2週で実装</div></div>
+    </div>
+    <div class="g-row">
+      <div class="g-label">No.3 会費ペイ仕訳計上 <small>（30分/月）</small></div>
+      <div class="g-track"><div class="bar p3" style="left:50%; width:12.5%;"></div></div>
+    </div>
+    <div class="g-row">
+      <div class="g-label">No.6 人件費freee入力 <small>（5分/月）</small></div>
+      <div class="g-track"><div class="bar p3" style="left:62.5%; width:12.5%;"></div></div>
+    </div>
+    <div class="g-row">
+      <div class="g-label">No.9 freee月次完了 <small>（120分/月）</small></div>
+      <div class="g-track"><div class="bar p3" style="left:62.5%; width:12.5%;"></div></div>
+    </div>
+    <div class="g-row">
+      <div class="g-label">No.18 経費精算→DIG連携 <small>（30分/月）</small></div>
+      <div class="g-track"><div class="bar p3" style="left:75%; width:12.5%;"></div></div>
+    </div>
+    <div class="g-row">
+      <div class="g-label">No.24 未回収管理・督促 <small>（45分/月）</small></div>
+      <div class="g-track"><div class="bar p3" style="left:75%; width:12.5%;"></div></div>
+    </div>
+
+    <div class="g-row group"><div class="g-label">仕上げ</div><div class="g-track"></div></div>
+    <div class="g-row">
+      <div class="g-label">全体テスト・削減効果検証</div>
+      <div class="g-track"><div class="bar fin" style="left:87.5%; width:12.5%;">7月末完了</div></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="sw" style="background:var(--green);"></span>完了済み</span>
+    <span><span class="sw" style="background:var(--amber);"></span>接続待ち（StartPass側作業）</span>
+    <span><span class="sw" style="background:var(--blue);"></span>Phase 2（資金まわり）</span>
+    <span><span class="sw" style="background:#7c3aed;"></span>Phase 3（消込・仕訳系）</span>
+    <span><span class="sw" style="background:var(--navy);"></span>検証・ゴール</span>
+  </div>
+
+  <h2>4. お願い事項</h2>
+  <div class="ask">
+    <strong>Slack Webhook URLの発行を1件お願いします。</strong><br>
+    No.13（支払リスト）と No.16（経費リマインド）の通知先チャンネル用です。発行手順が必要でしたらご案内します。
+  </div>
+
+</div>
+
+<footer>
+  <span>畠山謙人税理士事務所 ｜ 畠山 謙人</span>
+  <span>StartPass 経理財務Claude Code自動化プロジェクト</span>
+</footer>
+
+</div>
+</body>
+</html>
