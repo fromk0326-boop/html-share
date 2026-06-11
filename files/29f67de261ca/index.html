@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>StartPass × Claude Code 自動化プロジェクト ポータル</title>
+<style>
+  :root {
+    --navy: #1a2b4a;
+    --blue: #2563eb;
+    --blue-light: #eff6ff;
+    --green: #16a34a;
+    --green-light: #f0fdf4;
+    --gray: #6b7280;
+    --gray-light: #f3f4f6;
+    --border: #e5e7eb;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Meiryo UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    background: #f8fafc;
+    color: #1f2937;
+    line-height: 1.6;
+    padding: 24px 16px;
+  }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    overflow: hidden;
+  }
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, #2c4a7c 100%);
+    color: #fff;
+    padding: 32px 36px;
+  }
+  header .label {
+    font-size: 12px;
+    letter-spacing: 2px;
+    opacity: .8;
+    margin-bottom: 6px;
+  }
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  header .meta {
+    font-size: 13px;
+    opacity: .85;
+    margin-top: 8px;
+  }
+  .body { padding: 28px 36px 36px; }
+
+  h2 {
+    font-size: 15px;
+    color: var(--navy);
+    border-left: 4px solid var(--blue);
+    padding-left: 10px;
+    margin: 26px 0 14px;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  .btn-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  a.btn {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: all .15s ease;
+    background: #fff;
+  }
+  a.btn:hover {
+    border-color: var(--blue);
+    background: var(--blue-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37,99,235,.12);
+  }
+  .btn .icon {
+    flex: 0 0 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--blue-light);
+    color: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .btn.new .icon { background: var(--green-light); color: var(--green); }
+  .btn .txt { flex: 1; min-width: 0; }
+  .btn .title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn .desc {
+    font-size: 12.5px;
+    color: var(--gray);
+    margin-top: 2px;
+  }
+  .btn .arrow {
+    flex: 0 0 auto;
+    color: var(--gray);
+    font-size: 16px;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .tag.new { background: var(--green-light); color: var(--green); }
+  .tag.web { background: var(--blue-light); color: var(--blue); }
+  .tag.local { background: var(--gray-light); color: var(--gray); }
+
+  .btn .desc code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 11.5px;
+    background: var(--gray-light);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: #374151;
+  }
+  .note {
+    margin-top: 24px;
+    background: var(--gray-light);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--gray);
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 16px 36px;
+    font-size: 12px;
+    color: var(--gray);
+    display: flex;
+    justify-content: space-between;
+  }
+  @media (max-width: 640px) {
+    .body, header { padding-left: 20px; padding-right: 20px; }
+    footer { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="label">PROJECT PORTAL</div>
+  <h1>StartPass × Claude Code 経理財務自動化プロジェクト</h1>
+  <div class="meta">資料ポータル ｜ 畠山謙人税理士事務所</div>
+</header>
+
+<div class="body">
+
+  <h2>共有フォルダ（Google Drive）</h2>
+  <div class="btn-list">
+    <a class="btn" href="https://drive.google.com/drive/folders/1GOCYEMv3vMKwDGb_ou9kZ-IZ0HJc0tr7?usp=sharing" target="_blank">
+      <div class="icon">📁</div>
+      <div class="txt">
+        <div class="title">StartPass_ClaudeCode自動化_共有資料<span class="tag web">Drive・共有済み</span></div>
+        <div class="desc">資料・スキル一式の共有フォルダ。フォルダごとダウンロードして index.html を開くと全リンクが動作します</div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+  </div>
+
+  <h2>最新の報告資料</h2>
+  <div class="btn-list">
+    <a class="btn new" href="status_20260611.html" target="_blank">
+      <div class="icon">📊</div>
+      <div class="txt">
+        <div class="title">進捗報告ペライチ（2026.06.11）<span class="tag new">NEW</span></div>
+        <div class="desc">Phase 1完了状況・今日から着手するPhase 2・7月末ゴールまでの手順</div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+  </div>
+
+  <h2>導入計画</h2>
+  <div class="btn-list">
+    <a class="btn" href="https://fromk0326-boop.github.io/startpass/" target="_blank">
+      <div class="icon">🌐</div>
+      <div class="txt">
+        <div class="title">導入計画ダッシュボード<span class="tag web">Web公開版</span></div>
+        <div class="desc">全24業務の自動化計画・フェーズ別スケジュール（GitHub Pages）</div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+    <a class="btn" href="reference/mtg_20260417.html" target="_blank">
+      <div class="icon">📋</div>
+      <div class="txt">
+        <div class="title">導入計画ダッシュボード（4/17 MTG資料）<span class="tag local">ローカル</span></div>
+        <div class="desc">2026/04/17 打ち合わせ時点のスナップショット</div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+  </div>
+
+  <h2>成果物</h2>
+  <div class="btn-list">
+    <a class="btn" href="data/outputs/shikin-kuri_202604.html" target="_blank">
+      <div class="icon">💰</div>
+      <div class="txt">
+        <div class="title">資金繰り表 2025/11〜2026/07<span class="tag local">ローカル</span></div>
+        <div class="desc">freee APIから自動生成した資金繰り表（2026年4月作成）</div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+  </div>
+
+  <h2>スキル（自動化ツール）</h2>
+  <div class="btn-list">
+    <a class="btn" href="https://drive.google.com/drive/folders/1ctzk8U53UxwGcn_ko4m6OvXJ0QMUunJj" target="_blank">
+      <div class="icon">🔧</div>
+      <div class="txt">
+        <div class="title">No.8 外注費推移更新<span class="tag new">稼働中</span></div>
+        <div class="desc">freee APIから直近12ヶ月の外注費を月×取引先で集計し、CSVと増減サマリーを出力。格納先: <code>skills/No.8_startpass-gaichu-suii/</code></div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+    <a class="btn" href="https://drive.google.com/drive/folders/1MP-GvKTlgU-DpxWk1l_-HDNMX0RvB77a" target="_blank">
+      <div class="icon">🔧</div>
+      <div class="txt">
+        <div class="title">No.13 月末支払リスト差分検出<span class="tag new">稼働中</span></div>
+        <div class="desc">freee未決済取引を取得し、前月との差分（新規・消えた・金額変動）をGoogle Spreadsheetに反映。格納先: <code>skills/No.13_startpass-shiharai-list/</code></div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+    <a class="btn" href="https://drive.google.com/drive/folders/1Isacw2D3yqCZO5UpxJa3oTdrZMWJT4ya" target="_blank">
+      <div class="icon">🔧</div>
+      <div class="txt">
+        <div class="title">No.16 経費精算・勤怠リマインド<span class="tag local">接続待ち</span></div>
+        <div class="desc">毎月25日と月初2営業日にSlackへ自動通知。Slack Webhook URLの設定で稼働開始。格納先: <code>skills/No.16_startpass-keihi-reminder/</code></div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+    <a class="btn" href="https://drive.google.com/file/d/19EwuLcqHCIrrmfq0BlGLsp_10pKZYRYi/view" target="_blank">
+      <div class="icon">📖</div>
+      <div class="txt">
+        <div class="title">セットアップ手順書（SETUP.md）</div>
+        <div class="desc">Pythonライブラリ・freeeトークン・Slack Webhookの設定手順。スキルを動かす前にこちらを確認</div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+  </div>
+
+  <div class="note">
+    「ローカル」タグの資料はこのフォルダ内のファイルを開きます。スキルとセットアップ手順書のボタンはGoogleドライブの共有フォルダを開きます（インターネット接続が必要）。<br>
+    スキルの実行には <code style="font-family:Consolas,monospace;font-size:11px;">data/.env</code>（freeeアクセストークン・Slack Webhook URL）の設定が必要です。設定方法はセットアップ手順書を参照。.envファイルは秘密情報のため共有・コミット禁止です。
+  </div>
+
+</div>
+
+<footer>
+  <span>畠山謙人税理士事務所 ｜ 畠山 謙人</span>
+  <span>StartPass 経理財務Claude Code自動化プロジェクト</span>
+</footer>
+
+</div>
+</body>
+</html>
