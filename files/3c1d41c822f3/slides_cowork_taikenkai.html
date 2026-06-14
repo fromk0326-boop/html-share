@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1400, minimum-scale=0.1, maximum-scale=3.0">
+  <meta name="robots" content="noindex">
+  <title>税理士のAIバックオフィス改革｜Claude Cowork体験会</title>
+  <style>
+/* ===== SLIDE ENGINE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;font-family:var(--font-primary,'Meiryo UI','Hiragino Sans',sans-serif);background:var(--color-bg,#0a0a0a);color:var(--color-text,#e5e7eb);-webkit-font-smoothing:antialiased}
+.slide-deck{width:100%;overflow:visible}
+.slide{width:100vw;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:var(--slide-padding,60px 80px);position:relative;overflow:hidden}
+.slide-inner{width:100%;max-width:var(--slide-max-width,1400px);height:100%;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1}
+.progress-bar{position:fixed;top:0;left:0;height:3px;background:var(--color-accent,#d97757);z-index:1000;transition:width .1s}
+
+/* ===== THEME ===== */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+:root{
+  --color-bg:#0f1117;--color-bg-alt:#1a1d27;--color-surface:#1a1d27;--color-surface-alt:#252840;
+  --color-text:#e5e7eb;--color-text-secondary:#d1d5db;--color-text-muted:#9ca3af;--color-text-subtle:rgba(156,163,175,.5);
+  --color-accent:#d97757;--color-accent-light:rgba(217,119,87,.15);--color-accent-dim:rgba(217,119,87,.08);
+  --color-border:rgba(255,255,255,.09);--color-border-strong:rgba(255,255,255,.18);--color-border-accent:rgba(217,119,87,.4);
+  --color-success:#34a853;--color-warning:#fbbc04;--color-danger:#ea4335;
+  --color-nav-bg:rgba(0,0,0,.6);
+  --font-primary:'Noto Sans JP','Hiragino Kaku Gothic ProN','Meiryo UI',sans-serif;
+  --font-weight-light:300;--font-weight-normal:400;--font-weight-medium:500;--font-weight-bold:700;--font-weight-black:900;
+  --text-xs:18px;--text-sm:20px;--text-base:22px;--text-lg:29px;--text-xl:33px;--text-2xl:46px;--text-3xl:57px;--text-4xl:79px;--text-5xl:102px;--text-hero:137px;
+  --space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:32px;--space-2xl:48px;--space-3xl:64px;
+  --slide-padding:60px 80px;--slide-max-width:1400px;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+}
+
+/* slide-title */
+.slide-title{background:#0a0a0a;text-align:left;color:#f0f0f0;position:relative;overflow:hidden}
+.slide-title::before{content:'';position:absolute;top:-30%;right:-20%;width:80%;height:160%;background:radial-gradient(ellipse at 30% 50%,rgba(217,119,87,.35) 0%,transparent 60%),radial-gradient(ellipse at 70% 30%,rgba(251,188,4,.18) 0%,transparent 55%),radial-gradient(ellipse at 50% 80%,rgba(234,67,53,.12) 0%,transparent 50%);filter:blur(40px);z-index:0;animation:auroraShift 12s ease-in-out infinite alternate}
+@keyframes auroraShift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-20px,10px) scale(1.05)}100%{transform:translate(10px,-15px) scale(.98)}}
+.slide-title .slide-inner{z-index:1;justify-content:flex-end;padding-bottom:var(--space-3xl)}
+.slide-title .title-main{font-size:var(--text-5xl);font-weight:var(--font-weight-black);line-height:1.1;letter-spacing:-.02em;margin-bottom:var(--space-xl);color:#fff}
+.slide-title .title-sub{font-size:var(--text-xl);color:rgba(255,255,255,.7);font-weight:var(--font-weight-normal);line-height:1.5}
+.slide-title .title-meta{font-size:var(--text-base);color:rgba(255,255,255,.45);margin-top:var(--space-xl);text-align:right}
+
+/* slide-chapter */
+.slide-chapter{background:var(--color-bg);justify-content:center}
+.slide-chapter .chapter-number{font-size:var(--text-hero);font-weight:var(--font-weight-black);color:var(--color-accent);line-height:1;margin-bottom:var(--space-md);opacity:.2}
+.slide-chapter .chapter-title{font-size:var(--text-4xl);font-weight:var(--font-weight-black);line-height:1.2;color:var(--color-text)}
+.slide-chapter .chapter-desc{font-size:var(--text-lg);color:var(--color-text-muted);margin-top:var(--space-md)}
+
+/* slide-content */
+.slide-content{background:var(--color-bg)}
+.slide-content .content-heading{font-size:var(--text-3xl);font-weight:var(--font-weight-black);margin-bottom:var(--space-xl);color:var(--color-text)}
+
+/* slide-end */
+.slide-end{background:#0a0a0a;text-align:center;justify-content:center;color:#f0f0f0;position:relative;overflow:hidden}
+.slide-end::before{content:'';position:absolute;top:-30%;left:-20%;width:80%;height:160%;background:radial-gradient(ellipse at 40% 50%,rgba(217,119,87,.3) 0%,transparent 60%),radial-gradient(ellipse at 70% 40%,rgba(251,188,4,.15) 0%,transparent 50%);filter:blur(40px);z-index:0}
+.slide-end .slide-inner{z-index:1}
+
+/* slide-footer */
+.slide-footer{position:absolute;bottom:24px;left:80px;right:80px;display:flex;justify-content:space-between;align-items:flex-end;z-index:2}
+.slide-footer .footer-label{font-size:var(--text-xs);color:var(--color-text-subtle)}
+.slide-footer .footer-num{font-size:var(--text-sm);color:var(--color-text-subtle);font-variant-numeric:tabular-nums}
+
+/* utilities */
+.text-accent{color:var(--color-accent)}.text-muted{color:var(--color-text-muted)}.text-subtle{color:var(--color-text-subtle)}
+.text-success{color:var(--color-success)}.text-warning{color:var(--color-warning)}.text-danger{color:var(--color-danger)}.text-white{color:#fff}
+.text-center{text-align:center}.font-bold{font-weight:var(--font-weight-bold)}.font-black{font-weight:var(--font-weight-black)}
+.mt-sm{margin-top:var(--space-sm)}.mt-md{margin-top:var(--space-md)}.mt-lg{margin-top:var(--space-lg)}.mt-xl{margin-top:var(--space-xl)}.mt-2xl{margin-top:var(--space-2xl)}
+.mb-sm{margin-bottom:var(--space-sm)}.mb-md{margin-bottom:var(--space-md)}.mb-lg{margin-bottom:var(--space-lg)}.mb-xl{margin-bottom:var(--space-xl)}
+.tag{display:inline-block;padding:var(--space-xs) var(--space-md);border:1px solid var(--color-border);border-radius:999px;font-size:var(--text-xs);font-weight:var(--font-weight-medium);color:var(--color-text-muted)}
+.tag-accent{border-color:var(--color-accent);color:var(--color-accent);background:var(--color-accent-dim)}
+
+/* ===== COMPONENTS ===== */
+.event-badge{display:inline-block;background:rgba(217,119,87,.15);border:1px solid var(--color-accent);border-radius:6px;padding:4px 14px;font-size:var(--text-sm);font-weight:700;letter-spacing:.08em;color:var(--color-accent);margin-bottom:var(--space-lg)}
+
+.time-chip{display:inline-block;align-self:flex-start;background:var(--color-accent-dim);border:1px solid var(--color-border-accent);border-radius:999px;padding:4px 16px;font-size:var(--text-xs);font-weight:700;color:var(--color-accent);margin-bottom:var(--space-md);letter-spacing:.05em}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);margin-top:var(--space-md)}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);margin-top:var(--space-lg)}
+.col-card{padding:var(--space-lg);border-radius:var(--radius-md);border:1.5px solid var(--color-border);background:var(--color-surface)}
+.col-card.accent{border-color:var(--color-accent);background:rgba(217,119,87,.08)}
+.col-card.success{border-color:var(--color-success);background:rgba(52,168,83,.08)}
+.col-card.danger{border-color:var(--color-danger);background:rgba(234,67,53,.08)}
+.col-card.warning{border-color:var(--color-warning);background:rgba(251,188,4,.08)}
+.col-card-label{font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;color:var(--color-accent);margin-bottom:var(--space-sm)}
+.col-card-title{font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-sm)}
+.col-card ul{list-style:none}
+.col-card li{font-size:var(--text-sm);line-height:1.8;color:var(--color-text-secondary);padding-left:1.2em;text-indent:-1.2em}
+.col-card li::before{content:'・';color:var(--color-text-muted)}
+
+.goal-banner{font-size:var(--text-xl);font-weight:700;background:var(--color-accent-light);border:1.5px solid var(--color-border-accent);border-radius:var(--radius-lg);padding:var(--space-lg) var(--space-xl);color:#fff;margin-bottom:var(--space-xl);line-height:1.5}
+
+.prompt-box{background:#0d1117;border:1px solid #30363d;border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);font-size:var(--text-base);line-height:1.9;color:#c9d1d9;white-space:pre-wrap;margin:var(--space-md) 0}
+.prompt-box::before{content:'📋 そのままコピペでOK';display:block;color:var(--color-accent);font-size:var(--text-xs);font-weight:700;margin-bottom:var(--space-sm)}
+
+.callout{padding:var(--space-md) var(--space-lg);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:var(--text-sm);line-height:1.7;margin-top:var(--space-lg)}
+.callout-note{background:rgba(251,188,4,.08);border-left:5px solid var(--color-warning);color:var(--color-text-secondary)}
+.callout-danger{background:rgba(234,67,53,.08);border-left:5px solid var(--color-danger);color:var(--color-text-secondary)}
+
+.comp-table{width:100%;border-collapse:collapse;margin-top:var(--space-lg)}
+.comp-table th{padding:14px 20px;font-size:var(--text-sm);font-weight:700;color:var(--color-text-muted);border-bottom:2px solid var(--color-border);text-align:left}
+.comp-table th.accent{color:var(--color-accent);border-bottom-color:var(--color-accent)}
+.comp-table td{padding:12px 20px;font-size:var(--text-sm);border-bottom:1px solid var(--color-border);text-align:left;color:var(--color-text-secondary);line-height:1.6}
+.comp-table td:first-child{font-weight:700;color:var(--color-text);white-space:nowrap}
+.comp-table .good{color:var(--color-success);font-weight:700}
+.comp-table .bad{color:var(--color-danger)}
+.comp-table tr:hover td{background:rgba(255,255,255,.02)}
+
+.check-list{list-style:none;margin-top:var(--space-md)}
+.check-list li{font-size:var(--text-lg);line-height:2.1;color:var(--color-text-secondary)}
+.check-list li::before{content:'☐';color:var(--color-accent);font-weight:700;margin-right:14px}
+
+.point-list{list-style:none;margin-top:var(--space-sm)}
+.point-list li{font-size:var(--text-base);line-height:1.9;color:var(--color-text-secondary);padding-left:1.4em;text-indent:-1.4em}
+.point-list li::before{content:'→';color:var(--color-accent);font-weight:700;margin-right:10px}
+
+/* ナビ */
+.fixed-nav{position:fixed;top:28px;left:28px;z-index:9999}
+.fixed-nav-btn{width:48px;height:48px;border-radius:50%;border:none;background:var(--color-accent);color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.fixed-nav-btn:hover{transform:scale(1.1)}
+.fixed-nav-menu{display:none;position:absolute;top:60px;left:0;background:#1a1a1a;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 0;min-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.fixed-nav.open .fixed-nav-menu{display:block}
+.fixed-nav-menu a{display:flex;align-items:center;gap:10px;padding:12px 22px;color:#e5e5e5;text-decoration:none;font-size:16px;transition:background .15s}
+.fixed-nav-menu a:hover{background:rgba(255,255,255,.08)}
+.fixed-nav-menu a .nav-num{color:var(--color-accent);font-weight:700;font-size:13px;min-width:28px}
+html{scroll-behavior:smooth;overflow-y:auto}
+button,a{-webkit-tap-highlight-color:transparent}
+  </style>
+</head>
+<body>
+
+<!-- ナビゲーション -->
+<div class="fixed-nav" id="fixedNav">
+  <button class="fixed-nav-btn" onclick="document.getElementById('fixedNav').classList.toggle('open')">☰</button>
+  <div class="fixed-nav-menu">
+    <a href="#top"><span class="nav-num">▶</span>タイトル</a>
+    <a href="#goal"><span class="nav-num">◎</span>本日のゴール</a>
+    <a href="#timetable"><span class="nav-num">◎</span>タイムテーブル</a>
+    <a href="#vs"><span class="nav-num">01</span>チャット型AIとCoworkの違い</a>
+    <a href="#steps"><span class="nav-num">→</span>Coworkの動き方4ステップ</a>
+    <a href="#demo"><span class="nav-num">→</span>LIVE DEMO</a>
+    <a href="#setup"><span class="nav-num">02</span>セットアップ最終確認</a>
+    <a href="#work1"><span class="nav-num">W1</span>ワーク① フォルダ整理</a>
+    <a href="#work2"><span class="nav-num">W2</span>ワーク② 請求書PDF→Excel</a>
+    <a href="#work3"><span class="nav-num">W3</span>ワーク③ 顧問先向け案内文書</a>
+    <a href="#tips"><span class="nav-num">03</span>任せ方のコツ3か条</a>
+    <a href="#map"><span class="nav-num">→</span>明日から使えるお題リスト</a>
+    <a href="#end"><span class="nav-num">▶</span>まとめ</a>
+  </div>
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slide-deck">
+
+  <!-- ===== 1. タイトル ===== -->
+  <section id="top" class="slide slide-title">
+    <div class="slide-inner">
+      <div style="margin-bottom:var(--space-md)">
+        <span class="event-badge">UNDER40京信クラブ 第1回例会 ／ Claude Cowork ハンズオン</span>
+      </div>
+      <div class="title-main">税理士の<br><span style="color:var(--color-accent)">AIバックオフィス改革</span></div>
+      <div class="title-sub">チャットの次へ。「AIに仕事を任せる」Claude Cowork体験会</div>
+      <div class="title-meta">畠山謙人 公認会計士・税理士 ／ 2026.07.28（火）京都信用金庫 本店</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 2. 本日のゴール ===== -->
+  <section id="goal" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">本日のゴール</h2>
+      <div class="goal-banner">帰るまでに「自分のPCでAIに仕事を1つ任せて、<span class="text-accent">成果物を受け取る</span>」</div>
+      <ul class="point-list">
+        <li>チャット型AIとCoworkの違いを体で理解する</li>
+        <li>ワーク3本で「任せ方」の型を覚える</li>
+        <li>明日から事務所で使えるお題リストを持ち帰る</li>
+      </ul>
+      <div class="callout callout-note">講義は最小限。今日は手を動かす時間が主役です。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 3. タイムテーブル ===== -->
+  <section id="timetable" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">タイムテーブル<span class="text-muted" style="font-size:var(--text-xl)">（90分）</span></h2>
+      <table class="comp-table">
+        <tr><th style="width:200px">時間</th><th>内容</th></tr>
+        <tr><td>0:00〜0:15</td><td>自己紹介・活用事例：チャットとCoworkは何が違うか＋実演デモ</td></tr>
+        <tr><td>0:15〜0:25</td><td>セットアップ最終確認（全員がCowork画面を開くまで）</td></tr>
+        <tr><td>0:25〜0:40</td><td><span class="text-accent font-bold">ワーク①</span>　フォルダ整理（15分）</td></tr>
+        <tr><td>0:40〜1:00</td><td><span class="text-accent font-bold">ワーク②</span>　請求書PDFをExcel一覧に（20分）</td></tr>
+        <tr><td>1:00〜1:15</td><td><span class="text-accent font-bold">ワーク③</span>　顧問先向け案内文書を作る（15分）</td></tr>
+        <tr><td>1:15〜1:30</td><td>座談会：体験の感想＋事務所での活用マップ</td></tr>
+      </table>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 4. チャットとの違い ===== -->
+  <section id="vs" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">概要 0:00〜0:15</span>
+      <h2 class="content-heading">チャット型AIとCowork、何が違うか</h2>
+      <div class="two-col">
+        <div class="col-card">
+          <div class="col-card-label" style="color:var(--color-text-muted)">CHAT</div>
+          <div class="col-card-title text-muted">チャット型（ChatGPT等）</div>
+          <ul>
+            <li>質問に「答えを返す」</li>
+            <li>結果は画面の文章。コピペは自分</li>
+            <li>ファイルは1つずつ手で渡す</li>
+            <li>例えるなら「物知りな相談相手」</li>
+          </ul>
+        </div>
+        <div class="col-card accent">
+          <div class="col-card-label">COWORK</div>
+          <div class="col-card-title text-accent">Claude Cowork</div>
+          <ul>
+            <li>仕事を「終わらせて納品する」</li>
+            <li>結果はファイル。Excel・Word・PDFで返る</li>
+            <li>フォルダごと渡せば自分で読みに行く</li>
+            <li>例えるなら「PCの前に座る新人スタッフ」</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout callout-note">合言葉：「教えてもらう」から「やってもらう」へ。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 5. Coworkの動き方 ===== -->
+  <section id="steps" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">概要 0:00〜0:15</span>
+      <h2 class="content-heading">Coworkの動き方は4ステップ</h2>
+      <table class="comp-table">
+        <tr><th style="width:180px">ステップ</th><th style="width:140px">誰が</th><th>何をする</th></tr>
+        <tr><td><span class="text-accent">1.</span> 依頼</td><td>あなた</td><td>日本語で仕事を頼む（指示は雑でOK、後で直せる）</td></tr>
+        <tr><td><span class="text-accent">2.</span> 計画</td><td>Cowork</td><td>「こう進めます」と段取りを提示</td></tr>
+        <tr><td><span class="text-accent">3.</span> 実行</td><td>Cowork</td><td>フォルダのファイルを読み、作業する</td></tr>
+        <tr><td><span class="text-accent">4.</span> 納品</td><td>Cowork</td><td>成果物ファイルを作って報告</td></tr>
+      </table>
+      <div class="mt-xl">
+        <div class="col-card-label">安心ポイント</div>
+        <ul class="point-list">
+          <li>触れるのは「許可したフォルダの中」だけ</li>
+          <li>ファイルの削除は必ず確認してくる</li>
+          <li>途中で「ちょっと待って、こうして」と口を挟める</li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 6. デモ ===== -->
+  <section id="demo" class="slide slide-chapter">
+    <div class="slide-inner" style="align-items:center;text-align:center">
+      <div class="chapter-number">LIVE</div>
+      <div class="chapter-title">まず見てください</div>
+      <div class="chapter-desc">散らかったフォルダを、Coworkが3分で整理します</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 7. セットアップ確認 ===== -->
+  <section id="setup" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">準備 0:15〜0:25</span>
+      <h2 class="content-heading">セットアップ最終確認</h2>
+      <div class="col-card-label">チェックリスト（隣の人と確認）</div>
+      <ul class="check-list">
+        <li>デスクトップアプリでログインできている</li>
+        <li>画面上部に「Chat / Cowork」の切り替えがある</li>
+        <li>Coworkタブを開いてエラーが出ない</li>
+        <li>デスクトップに「cowork練習」フォルダがある（中にファイル20個以上・PDF/Excel/Word/画像が混在）</li>
+      </ul>
+      <div class="callout callout-note">フォルダを忘れた方へ：配布した練習用サンプル（Driveリンク/QR）をダウンロードすればOKです。未契約の方はお隣の画面で一緒に体験してください。</div>
+      <div class="callout callout-danger">約束ごと：顧問先の実データ（申告書・マイナンバー・口座情報）は今日のワークでは使わない。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 8. ワーク① ===== -->
+  <section id="work1" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">ワーク① 0:25〜0:40</span>
+      <h2 class="content-heading">ワーク①：フォルダ整理を任せる<span class="text-muted" style="font-size:var(--text-xl)">（15分）</span></h2>
+      <p style="font-size:var(--text-base);color:var(--color-text-secondary)">最初の一歩。「フォルダごと渡す」感覚をつかみます。</p>
+      <div class="prompt-box">デスクトップの「cowork練習」フォルダを見てください。
+中のファイルを種類ごとにサブフォルダを作って整理して、
+最後に「何をどこに移したか」の一覧表をExcelで作ってください。
+ファイルの削除はしないでください。</div>
+      <div class="col-card-label">見てほしいポイント</div>
+      <ul class="point-list">
+        <li>作業前に「計画」を出してくる → 内容を読んでから承認する</li>
+        <li>フォルダへのアクセス許可を求めてくる → 許可する</li>
+        <li>終わったら整理結果とExcelができている</li>
+      </ul>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 9. ワーク② ===== -->
+  <section id="work2" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">ワーク② 0:40〜1:00</span>
+      <h2 class="content-heading">ワーク②：請求書PDFをExcel一覧に<span class="text-muted" style="font-size:var(--text-xl)">（20分）</span></h2>
+      <p style="font-size:var(--text-base);color:var(--color-text-secondary)">税理士業務に一番近いワーク。「読み取り → 表に整形」はCoworkの得意技です。</p>
+      <div class="prompt-box">「cowork練習」フォルダにあるPDFを全部読んで、
+次の列でExcel一覧を作ってください。
+列：ファイル名／書類の種類／日付／相手先／金額（税込）
+読み取れなかった項目は「要確認」と入れてください。</div>
+      <div class="two-col">
+        <div>
+          <div class="col-card-label">応用（早く終わった人向け）</div>
+          <ul class="point-list">
+            <li>「金額の合計行を追加して」</li>
+            <li>「日付順に並べ替えて、月ごとに小計を入れて」</li>
+            <li>「源泉徴収・軽減税率8%・外貨建ての請求書だけ抜き出して」</li>
+            <li>「全セルのフォントをメイリオUIにして」</li>
+          </ul>
+        </div>
+        <div class="callout callout-note" style="margin-top:0">ここが記帳代行・証憑整理の自動化の入口。事務所で使うイメージが湧くはず。</div>
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 10. ワーク③ ===== -->
+  <section id="work3" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">ワーク③ 1:00〜1:15</span>
+      <h2 class="content-heading">ワーク③：顧問先向け案内文書を作る<span class="text-muted" style="font-size:var(--text-xl)">（15分）</span></h2>
+      <p style="font-size:var(--text-base);color:var(--color-text-secondary)">「調べて、まとめて、Wordで納品」まで一気通貫でやらせます。</p>
+      <div class="prompt-box">顧問先に送る「年末調整の必要資料のご案内」をWordで作ってください。
+条件：
+・対象は従業員10名以下の小規模法人
+・必要書類をチェックリスト形式で
+・提出期限は11月末と記載
+・A4で1枚、やわらかい敬語で</div>
+      <div class="col-card-label">仕上げの一言（修正指示の練習）</div>
+      <ul class="point-list">
+        <li>「もう少し簡潔に。チェックリストを表組みにして」</li>
+        <li>「同じ内容でメール本文版も作って」</li>
+      </ul>
+      <div class="callout callout-note">一発で完璧を求めない。「6割の下書き → 口頭で直す」が一番速い使い方。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 11. 任せ方のコツ ===== -->
+  <section id="tips" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">まとめ 1:15〜1:30</span>
+      <h2 class="content-heading">任せ方のコツ 3か条</h2>
+      <table class="comp-table">
+        <tr><th style="width:280px">コツ</th><th>悪い例</th><th class="accent">良い例</th></tr>
+        <tr><td><span class="text-accent">1.</span> 成果物を指定する</td><td class="bad">「請求書を整理して」</td><td class="good">「請求書を読んでExcel一覧にして」</td></tr>
+        <tr><td><span class="text-accent">2.</span> 形式・条件を足す</td><td class="bad">「案内文を作って」</td><td class="good">「A4で1枚、チェックリスト形式で」</td></tr>
+        <tr><td><span class="text-accent">3.</span> 直しは会話で</td><td class="bad">最初から完璧な指示文を悩む</td><td class="good">出てきた物に「ここ直して」と言う</td></tr>
+      </table>
+      <div class="callout callout-note">新人スタッフへの頼み方と同じ。最初の指示は6割で出して、対話で詰める。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 12. お題リスト ===== -->
+  <section id="map" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">まとめ 1:15〜1:30</span>
+      <h2 class="content-heading">明日から使えるお題リスト<span class="text-muted" style="font-size:var(--text-xl)">（持ち帰り用）</span></h2>
+      <table class="comp-table">
+        <tr><th style="width:220px">業務</th><th>Coworkへの頼み方</th></tr>
+        <tr><td>証憑整理</td><td>「このフォルダの領収書PDFを日付・金額・店名でExcel一覧に」</td></tr>
+        <tr><td>資料依頼</td><td>「決算前の資料依頼リストを顧問先向けWordで」</td></tr>
+        <tr><td>議事録整理</td><td>「この面談メモを要点・宿題・期限の3部構成に清書して」</td></tr>
+        <tr><td>料金表・案内</td><td>「事務所の料金表を見やすいPDF 1枚に」</td></tr>
+        <tr><td>調査もの</td><td>「今年の税制改正のうち中小企業に関係する項目をA4 1枚に」</td></tr>
+        <tr><td>PC掃除</td><td>「ダウンロードフォルダを種類別に整理して」</td></tr>
+      </table>
+      <div class="callout callout-danger">引き続きの注意：顧問先の実データを扱う際は、契約・所内ルールを整えてから。今日のやり方のままマイナンバー等を投げ込まない。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 13. まとめ ===== -->
+  <section id="end" class="slide slide-end">
+    <div class="slide-inner">
+      <div style="margin-bottom:var(--space-lg)"><span class="event-badge">WRAP UP</span></div>
+      <div style="font-size:var(--text-4xl);font-weight:var(--font-weight-black);line-height:1.25;color:#fff">「教えてもらうAI」から<br><span style="color:var(--color-accent)">「働いてもらうAI」</span>へ</div>
+      <div style="font-size:var(--text-lg);color:rgba(255,255,255,.7);margin-top:var(--space-xl)">今日の3ワークが、事務所の仕組み化の第一歩</div>
+      <div style="font-size:var(--text-base);color:rgba(255,255,255,.5);margin-top:var(--space-2xl)">質疑応答＋個別のつまずき相談タイム</div>
+      <div style="text-align:right;font-size:var(--text-xs);color:rgba(255,255,255,.2);margin-top:var(--space-3xl)">畠山謙人税理士事務所　©2026</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// ナビ閉じる
+document.addEventListener('click', e => {
+  if (!e.target.closest('#fixedNav')) {
+    document.getElementById('fixedNav').classList.remove('open');
+  }
+});
+// プログレスバー
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('progressBar').style.width = (total > 0 ? scrolled / total * 100 : 0) + '%';
+});
+// ページ番号
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  slides.forEach((s, i) => {
+    const num = s.querySelector('.footer-num');
+    if (num) num.textContent = (i + 1) + ' / ' + slides.length;
+    const label = s.querySelector('.footer-label');
+    if (label) label.textContent = 'UNDER40京信クラブ ／ Claude Cowork体験会';
+  });
+})();
+// 矢印キーでスライド移動
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  function currentIndex() {
+    let best = 0, bestDist = Infinity;
+    slides.forEach((s, i) => {
+      const dist = Math.abs(s.getBoundingClientRect().top);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    return best;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      const next = Math.min(currentIndex() + 1, slides.length - 1);
+      slides[next].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = Math.max(currentIndex() - 1, 0);
+      slides[prev].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+})();
+</script>
+</body>
+</html>
