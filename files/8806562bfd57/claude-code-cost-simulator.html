@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Claude Code 導入コスト シミュレーター｜税理士事務所向け</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --accent: #d97757;
+    --accent-dark: #c4633f;
+    --accent-soft: #fdf0eb;
+    --ink: #2c2c2c;
+    --ink-soft: #666;
+    --line: #e0dcd6;
+    --bg: #f8f6f2;
+    --green: #2e9e5a;
+  }
+
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", "Meiryo UI", "Meiryo", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0 0 56px;
+    line-height: 1.6;
+  }
+
+  /* ===================== ヘッダー ===================== */
+  .header {
+    background: var(--ink);
+    color: #fff;
+    padding: 30px 32px 26px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .header-title { font-size: 23px; font-weight: 700; letter-spacing: 0.02em; line-height: 1.3; }
+  .header-sub { font-size: 12.5px; color: #bbb; margin-top: 5px; }
+  .header-credit { font-size: 12px; color: #aaa; text-align: right; white-space: nowrap; }
+
+  .main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 0; }
+
+  /* ===================== フロー表示 ===================== */
+  .flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; font-size: 12.5px; color: var(--ink-soft); }
+  .flow .fstep { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 6px 14px; }
+  .flow .fnum { background: var(--accent); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .flow .farrow { color: #c8c0b6; font-size: 16px; }
+
+  /* ===================== セクション見出し ===================== */
+  .section-head { display: flex; align-items: center; gap: 12px; margin: 8px 0 8px; }
+  .step-badge {
+    background: var(--accent); color: #fff; font-size: 12px; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px; white-space: nowrap; letter-spacing: 0.04em;
+  }
+  .step-badge.gray { background: #5a6b7a; }
+  .section-title { font-size: 18px; font-weight: 700; color: #1a1a1a; }
+  .section-note { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 18px; }
+
+  /* ===================== 設定パネル ===================== */
+  .settings-panel {
+    background: #fff; border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 24px; margin-bottom: 24px;
+    display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-end;
+  }
+  .setting-group { display: flex; flex-direction: column; gap: 6px; }
+  .setting-label { font-size: 11px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; }
+  .toggle-wrap { display: flex; border: 1.5px solid var(--accent); border-radius: 6px; overflow: hidden; }
+  .toggle-btn {
+    padding: 8px 20px; font-size: 13px; font-weight: 600; border: none;
+    background: transparent; cursor: pointer; color: var(--accent);
+    transition: background .15s, color .15s; font-family: inherit;
+  }
+  .toggle-btn.active { background: var(--accent); color: #fff; }
+  .toggle-btn:hover:not(.active) { background: var(--accent-soft); }
+  .fx-input-wrap { display: flex; align-items: center; gap: 8px; }
+  .fx-input {
+    width: 90px; padding: 8px 10px; border: 1.5px solid #d0cbc4; border-radius: 6px;
+    font-size: 14px; font-family: inherit; text-align: right; transition: border-color .15s;
+  }
+  .fx-input:focus { outline: none; border-color: var(--accent); }
+  .fx-unit { font-size: 13px; color: #888; white-space: nowrap; }
+
+  /* ===================== STEP1 役割カード ===================== */
+  .role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+  .rcard {
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    padding: 20px 20px 18px; display: flex; flex-direction: column; gap: 10px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .rcard.has-count { border-color: var(--accent); box-shadow: 0 2px 14px rgba(217,119,87,.12); }
+  .rcard-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .rcard-name { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+  .rcard-tag { font-size: 10.5px; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 3px 9px; border-radius: 12px; white-space: nowrap; }
+  .rcard-intensity { font-size: 12px; color: var(--ink-soft); }
+  .rcard-intensity b { color: var(--ink); }
+  .rcard-desc { font-size: 12px; color: #555; line-height: 1.6; flex-grow: 1; }
+  .rcard-input-row { display: flex; align-items: center; gap: 10px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .rcard-input-label { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+  .num-input {
+    width: 76px; padding: 8px 10px; border: 1.5px solid #d0cbc4; border-radius: 6px;
+    font-size: 15px; font-family: inherit; text-align: right; transition: border-color .15s;
+  }
+  .num-input:focus { outline: none; border-color: var(--accent); }
+  .rcard-unit { font-size: 12.5px; color: #888; }
+
+  .step1-total {
+    display: flex; align-items: baseline; gap: 10px; justify-content: flex-end;
+    padding: 14px 20px; background: #faf7f4; border: 1px solid var(--line);
+    border-radius: 8px; margin-bottom: 36px;
+  }
+  .step1-total .s1-label { font-size: 13px; color: var(--ink-soft); font-weight: 600; }
+  .step1-total .s1-val { font-size: 24px; font-weight: 700; color: #1a1a1a; font-variant-numeric: tabular-nums; }
+  .step1-total .s1-unit { font-size: 13px; color: var(--ink-soft); }
+
+  /* ===================== STEP2 提案ボタン・カード ===================== */
+  .propose-bar { display: flex; justify-content: center; margin: 0 0 36px; }
+  .propose-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 13px 30px; font-size: 15px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: background .15s, transform .05s;
+    box-shadow: 0 2px 12px rgba(217,119,87,.28);
+  }
+  .propose-btn:hover { background: var(--accent-dark); }
+  .propose-btn:active { transform: translateY(1px); }
+  .propose-card {
+    display: none; background: #fff; border: 2px solid var(--accent);
+    border-radius: 10px; padding: 18px 22px; margin-bottom: 36px;
+  }
+  .propose-card.show { display: block; }
+  .pc-head { font-size: 14px; font-weight: 700; color: var(--accent-dark); margin-bottom: 12px; }
+  .pc-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pc-badge { font-size: 13.5px; font-weight: 700; color: #fff; padding: 6px 16px; border-radius: 20px; }
+  .pc-badge.personal { background: #5a6b7a; }
+  .pc-badge.team { background: var(--accent); }
+  .pc-month-wrap { font-size: 13px; color: var(--ink-soft); }
+  .pc-month-wrap b { font-size: 21px; color: #1a1a1a; font-variant-numeric: tabular-nums; }
+  .pc-reason { font-size: 13px; color: #444; line-height: 1.75; margin: 0 0 12px; }
+  .pc-roles { font-size: 12.5px; color: var(--ink); background: #faf7f4; border-radius: 6px; padding: 11px 14px; margin-bottom: 12px; }
+  .pc-foot { font-size: 11.5px; color: #999; }
+
+  /* ===================== STEP2 最終決定テーブル ===================== */
+  .final-wrap { background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead th {
+    background: var(--ink); color: #fff; padding: 11px 9px; text-align: left;
+    font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap;
+  }
+  thead th.num { text-align: right; }
+  thead th.center { text-align: center; }
+  tbody tr { border-bottom: 1px solid #f0ece7; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fdf9f7; }
+  td { padding: 13px 9px; vertical-align: middle; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.center { text-align: center; }
+  .f-role { font-weight: 700; color: #1a1a1a; }
+  .f-role small { display: block; font-size: 11px; color: var(--accent); font-weight: 600; margin-top: 2px; }
+  .f-seats { font-size: 16px; font-weight: 700; color: #1a1a1a; font-variant-numeric: tabular-nums; }
+  .f-token { font-size: 12.5px; color: #555; }
+  .f-api { font-size: 12.5px; color: #555; }
+  .plan-select {
+    padding: 7px 10px; border: 1.5px solid #d0cbc4; border-radius: 6px;
+    font-size: 13px; font-family: inherit; background: #fff; cursor: pointer; transition: border-color .15s;
+  }
+  .plan-select:focus { outline: none; border-color: var(--accent); }
+  .f-plan-cap { font-size: 10.5px; color: #888; margin-top: 5px; line-height: 1.4; }
+  .f-unit { font-size: 13px; color: #444; font-variant-numeric: tabular-nums; }
+  .f-sub-jpy { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+  .f-sub-zero { font-size: 14px; color: #ccc; }
+  tbody tr.empty-role td { color: #bbb; }
+  tbody tr.empty-role .f-role { color: #bbb; }
+  tbody tr.empty-role .f-role small { color: #ccc; }
+
+  /* 最終決定パネル */
+  .final-panel {
+    background: var(--ink); border-radius: 10px; padding: 24px 28px; color: #fff;
+    margin-bottom: 18px; display: flex; flex-wrap: wrap; gap: 24px;
+    align-items: center; justify-content: space-between;
+  }
+  .final-item { min-width: 150px; }
+  .final-label { font-size: 11px; color: #aaa; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 5px; }
+  .final-seats { font-size: 16px; color: #ccc; font-variant-numeric: tabular-nums; }
+  .final-usd { font-size: 15px; color: #ccc; font-variant-numeric: tabular-nums; }
+  .final-jpy-mo { font-size: 30px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; line-height: 1; }
+  .final-jpy-yr { font-size: 18px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; margin-top: 4px; }
+
+  .mismatch-banner {
+    background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px;
+    padding: 10px 16px; font-size: 13px; color: #856404; margin-bottom: 16px; display: none;
+  }
+  .mismatch-banner.show { display: block; }
+
+  /* 契約形態トグル */
+  .contract-toggle-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+  .contract-toggle-row .setting-label { font-size: 12px; }
+  .team-info {
+    background: #eef4f8; border: 1px solid #cfe0ec; border-radius: 8px;
+    padding: 12px 16px; font-size: 12px; color: #3a5a72; line-height: 1.7; margin-bottom: 16px; display: none;
+  }
+  .team-info.show { display: block; }
+  .team-info b { color: #2c4a60; }
+
+  /* ===================== トークン目安の補足 ===================== */
+  .anchor-box {
+    background: var(--accent-soft); border: 1px solid #f0c9b8; border-radius: 8px;
+    padding: 14px 18px; font-size: 12.5px; color: #7a3d27; line-height: 1.7; margin-bottom: 36px;
+  }
+  .anchor-box b { color: var(--accent-dark); }
+
+  /* ===================== 補足：プラン直接指定 ===================== */
+  details.extra { margin-bottom: 36px; }
+  details.extra > summary {
+    cursor: pointer; font-size: 14px; font-weight: 700; color: #1a1a1a;
+    padding: 14px 18px; background: #fff; border: 1px solid var(--line); border-radius: 8px;
+    list-style: none; display: flex; align-items: center; gap: 10px;
+  }
+  details.extra > summary::-webkit-details-marker { display: none; }
+  details.extra > summary::before { content: '＋'; color: var(--accent); font-weight: 700; }
+  details.extra[open] > summary::before { content: '－'; }
+  details.extra > summary .sub { font-size: 11.5px; font-weight: 400; color: var(--ink-soft); }
+  .extra-body { padding-top: 14px; }
+  .plan-table-wrap { background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; margin-bottom: 14px; }
+  .plan-name { font-weight: 700; font-size: 14px; color: #1a1a1a; }
+  .plan-desc { font-size: 11px; color: #888; margin-top: 2px; }
+  .plan-note { font-size: 10px; color: var(--accent); margin-top: 2px; font-style: italic; }
+  td.unit-price { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .price-main { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+  .price-sub { font-size: 11px; color: #888; }
+  td.subtotal { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .subtotal-usd { font-size: 13px; color: #555; }
+  .subtotal-jpy { font-size: 15px; font-weight: 700; color: #1a1a1a; margin-top: 1px; }
+  .subtotal-zero { font-size: 13px; color: #ccc; }
+  .table-num-input { width: 70px; padding: 7px 10px; border: 1.5px solid #d0cbc4; border-radius: 6px; font-size: 14px; font-family: inherit; text-align: right; }
+  .table-num-input:focus { outline: none; border-color: var(--accent); }
+  .enterprise-usd-input { width: 80px; padding: 7px 8px; border: 1.5px solid #d0cbc4; border-radius: 6px; font-size: 13px; font-family: inherit; text-align: right; }
+  .usd-input-label { font-size: 11px; color: #888; }
+  .num-input-wrap { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .warning-banner {
+    background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px;
+    padding: 10px 16px; font-size: 13px; color: #856404; margin: 0 0 14px; display: none;
+  }
+  .warning-banner.show { display: block; }
+  .detail-total {
+    display: flex; justify-content: flex-end; gap: 24px; align-items: baseline;
+    padding: 14px 18px; background: #faf7f4; border: 1px solid var(--line); border-radius: 8px;
+  }
+  .detail-total .dt-label { font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+  .detail-total .dt-mo { font-size: 22px; font-weight: 700; color: #1a1a1a; font-variant-numeric: tabular-nums; }
+  .detail-total .dt-yr { font-size: 14px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+  /* ===================== アクション・フッター ===================== */
+  .action-bar { display: flex; justify-content: flex-end; margin-bottom: 28px; }
+  .print-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 6px;
+    padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: background .15s;
+  }
+  .print-btn:hover { background: var(--accent-dark); }
+  .footer { max-width: 1040px; margin: 0 auto; padding: 0 16px; font-size: 11px; color: #999; line-height: 1.8; }
+  .footer b { color: #777; }
+
+  /* ===================== 印刷 ===================== */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .header, .final-panel, thead th { background: var(--ink) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .step-badge, .rcard-tag { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .action-bar, .print-btn { display: none; }
+    .rcard, .final-panel, .final-wrap, .plan-table-wrap, .detail-total, .step1-total { break-inside: avoid; }
+    details.extra { open: true; }
+    input[type="number"] { border: none !important; background: transparent !important; font-weight: 700; text-align: right; }
+  }
+
+  /* ===================== レスポンシブ ===================== */
+  @media (max-width: 820px) { .role-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) {
+    .header { padding: 20px 16px; }
+    .header-title { font-size: 18px; }
+    .main { padding: 18px 10px 0; }
+    .settings-panel { padding: 16px 14px; gap: 16px; }
+    .final-panel { padding: 18px 16px; }
+    .final-jpy-mo { font-size: 24px; }
+    table { font-size: 12px; }
+    td { padding: 10px 8px; }
+    thead th { padding: 10px 8px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <div class="header-title">Claude Code 導入コスト シミュレーター</div>
+    <div class="header-sub">税理士事務所向け・触る人数 × ツール（Cowork／Claude Code）× トークン消費から月額を見積もり</div>
+  </div>
+  <div class="header-credit">畠山謙人税理士事務所</div>
+</header>
+
+<div class="main">
+
+  <!-- フロー -->
+  <div class="flow">
+    <span class="fstep"><span class="fnum">1</span>触る人数を役割別に洗い出す</span>
+    <span class="farrow">→</span>
+    <span class="fstep"><span class="fnum">2</span>最適プランを提案</span>
+    <span class="farrow">→</span>
+    <span class="fstep"><span class="fnum">3</span>調整して最終決定</span>
+  </div>
+
+  <!-- 設定 -->
+  <div class="settings-panel">
+    <div class="setting-group">
+      <span class="setting-label">請求サイクル</span>
+      <div class="toggle-wrap">
+        <button class="toggle-btn active" id="btn-monthly" onclick="setCycle('monthly')">月払い</button>
+        <button class="toggle-btn" id="btn-annual" onclick="setCycle('annual')">年払い</button>
+      </div>
+    </div>
+    <div class="setting-group">
+      <span class="setting-label">為替レート</span>
+      <div class="fx-input-wrap">
+        <input type="number" class="fx-input" id="fx-rate" value="155" min="1" step="1" oninput="recalcAll()">
+        <span class="fx-unit">円 / USD</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ STEP1 ============ -->
+  <div class="section-head">
+    <span class="step-badge">STEP 1</span>
+    <span class="section-title">Claude Code を触る人数を洗い出す</span>
+  </div>
+  <p class="section-note">事務所で誰がClaude Codeを使うかを、役割別に人数で入れてください。まずはざっくりでOKです。</p>
+
+  <div class="role-grid">
+    <!-- 所長・管理者 -->
+    <div class="rcard" id="rcard-owner">
+      <div class="rcard-head">
+        <span class="rcard-name">所長・管理者</span>
+        <span class="rcard-tag">仕組みを作る側</span>
+      </div>
+      <div class="rcard-intensity">利用強度: <b>ヘビー</b> ／ 推奨ツール: <b>Claude Code</b></div>
+      <div class="rcard-desc">司令塔としてサブエージェント並列・無人バッチ・自動化基盤の開発運用まで。事務所のAI化を主導する人。CLIで重く回すのでClaude Code向き。</div>
+      <div class="rcard-input-row">
+        <span class="rcard-input-label">人数</span>
+        <input type="number" class="num-input" id="count-owner" value="0" min="0" oninput="recalcAll()">
+        <span class="rcard-unit">人</span>
+      </div>
+    </div>
+
+    <!-- 実務スタッフ -->
+    <div class="rcard" id="rcard-staff">
+      <div class="rcard-head">
+        <span class="rcard-name">実務スタッフ</span>
+        <span class="rcard-tag">実務の主戦力</span>
+      </div>
+      <div class="rcard-intensity">利用強度: <b>標準</b> ／ 推奨ツール: <b>Cowork</b></div>
+      <div class="rcard-desc">毎日2〜4時間。仕訳分類・証憑OCR・顧問先連絡・申告まわりの資料作成を本格的に回す人。承認ベースのCoworkで十分まかなえる。</div>
+      <div class="rcard-input-row">
+        <span class="rcard-input-label">人数</span>
+        <input type="number" class="num-input" id="count-staff" value="0" min="0" oninput="recalcAll()">
+        <span class="rcard-unit">人</span>
+      </div>
+    </div>
+
+    <!-- スポット・補助 -->
+    <div class="rcard" id="rcard-spot">
+      <div class="rcard-head">
+        <span class="rcard-name">スポット・補助</span>
+        <span class="rcard-tag">補助的に使う</span>
+      </div>
+      <div class="rcard-intensity">利用強度: <b>ライト</b> ／ 推奨ツール: <b>Cowork</b></div>
+      <div class="rcard-desc">週に数回。下書き・調べもの・簡単な資料づくり。まず触ってみる段階の人。CLI不要のCoworkが入口に最適。</div>
+      <div class="rcard-input-row">
+        <span class="rcard-input-label">人数</span>
+        <input type="number" class="num-input" id="count-spot" value="0" min="0" oninput="recalcAll()">
+        <span class="rcard-unit">人</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="step1-total">
+    <span class="s1-label">Claude Code を触る人数</span>
+    <span class="s1-val" id="step1-total">0</span>
+    <span class="s1-unit">アカウント</span>
+  </div>
+
+  <div class="propose-bar">
+    <button type="button" class="propose-btn" onclick="propose()">▶ この人数で最適プランを提案する</button>
+  </div>
+
+  <!-- ============ STEP2 提案 ============ -->
+  <div class="section-head">
+    <span class="step-badge">STEP 2</span>
+    <span class="section-title">最適プランの提案</span>
+  </div>
+  <p class="section-note">上の［最適プランを提案する］を押すと、人数構成に合った契約形態とプランをこちらで提案します。</p>
+
+  <div class="propose-card" id="propose-card">
+    <div class="pc-head">📋 最適プランのご提案</div>
+    <div class="pc-row">
+      <span class="pc-badge personal" id="pc-badge">個人プランで契約</span>
+      <span class="pc-month-wrap" id="pc-month-wrap">推奨構成での月額 <b id="pc-month">0 円</b> / 月</span>
+    </div>
+    <p class="pc-reason" id="pc-reason"></p>
+    <div class="pc-roles" id="pc-roles"></div>
+    <div class="pc-foot">この提案をベースに、下のSTEP3で契約形態やプランを微調整して最終決定できます。</div>
+  </div>
+
+  <!-- ============ STEP3 最終決定 ============ -->
+  <div class="section-head">
+    <span class="step-badge">STEP 3</span>
+    <span class="section-title">調整して最終決定</span>
+  </div>
+  <p class="section-note">提案をもとに、役割ごとのツール（Cowork／Claude Code）・契約形態・プランを選び直して最終決定します。ツールを切り替えると想定トークン量と推奨プランが連動します。定額プランは「従量課金（API）ならいくら相当か」で選ぶのがコツです。</p>
+
+  <!-- 契約形態トグル -->
+  <div class="contract-toggle-row">
+    <span class="setting-label">契約形態</span>
+    <div class="toggle-wrap">
+      <button class="toggle-btn active" id="btn-personal" onclick="setContract('personal')">個人プランで契約</button>
+      <button class="toggle-btn" id="btn-team" onclick="setContract('team')">Teamプランで契約</button>
+    </div>
+    <span style="font-size:11.5px;color:#888;">個人=各自で契約／Team=事務所で一括契約・中央管理</span>
+  </div>
+
+  <!-- Team説明 -->
+  <div class="team-info" id="team-info">
+    <b>Teamプラン（組織で一括契約）:</b> 中央管理・課金の一元化・メンバー追加/削除を管理画面から行えます。最低5席（Standard + Premium 合算）から。Team Standard は標準利用量、Team Premium はその約5倍の利用量です。<br>
+    ※司令塔級（ヘビー）の利用は Team Premium の上限を超える場合があります。その際は所長のみ個人 Max 20x との併用もご検討ください。
+  </div>
+
+  <!-- 最低席数 警告 -->
+  <div class="mismatch-banner" id="seat-warning">
+    Teamプランは最低5席が必要です。現在の合計が5席未満です。Pro/Max（個人プラン）への切替もご検討ください。
+  </div>
+
+  <div class="final-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:130px;">役割</th>
+          <th class="center" style="width:120px;">ツール（変更可）</th>
+          <th class="num" style="width:60px;">人数</th>
+          <th class="num" style="width:120px;">想定トークン/月</th>
+          <th class="num" style="width:120px;">従量課金換算/月</th>
+          <th class="center" style="width:150px;">プラン（変更可）<br><span style="font-weight:400;color:#bbb;font-size:10px;">目安上限つき</span></th>
+          <th class="num" style="width:90px;">単価/人</th>
+          <th class="num" style="width:120px;">小計</th>
+        </tr>
+      </thead>
+      <tbody id="final-tbody"><!-- JS生成 --></tbody>
+    </table>
+  </div>
+
+  <!-- 最終決定パネル -->
+  <div class="final-panel">
+    <div class="final-item">
+      <div class="final-label">合計アカウント数</div>
+      <div class="final-seats" id="final-seats">0 アカウント</div>
+    </div>
+    <div class="final-item">
+      <div class="final-label">合計 (USD / 月)</div>
+      <div class="final-usd" id="final-usd">$0</div>
+    </div>
+    <div class="final-item">
+      <div class="final-label">月額の見積もり (円 / 月)</div>
+      <div class="final-jpy-mo" id="final-jpy-mo">0 円</div>
+    </div>
+    <div class="final-item">
+      <div class="final-label">年額の見積もり (円 / 年)</div>
+      <div class="final-jpy-yr" id="final-jpy-yr">0 円</div>
+    </div>
+  </div>
+
+  <div class="anchor-box">
+    <b>トークン量の実測アンカー（畠山事務所・スタッフ0人で60社運用）:</b> 司令塔としてClaude Codeをフル稼働させた月で、従量課金換算<b> 約$1,200/月（約10億トークン/月）</b>相当の処理量。これを <b>Max 20x（$200/月）の定額</b>でまかなっています。定額プランは「使い倒すほど割安」になる構造で、ヘビー層ほど従量課金より定額が圧倒的に有利です。<br>
+    <b>Cowork と Claude Code の関係:</b> どちらも同じClaude有料プラン（Pro／Max／Team）の中で動き、<b>ツールごとの追加課金はありません</b>。違いは「ワークロードの重さ＝消費トークン量の傾向」と「CLIの要否」。所長は自動化基盤を重く回すのでClaude Code、仕訳・OCR・連絡が中心のスタッフは承認ベースのCoworkで足りる、という棲み分けが目安です。<br>
+    ※トークン量はキャッシュ読込を含む実効処理量。使い方により大きく変動します。プラン選定の参考値としてご利用ください。
+  </div>
+
+  <!-- ============ 補足：プラン直接指定 ============ -->
+  <details class="extra">
+    <summary>補足：プランを直接指定して見積もる<span class="sub">（Team / Enterprise を含めて積み上げたい場合）</span></summary>
+    <div class="extra-body">
+      <div class="warning-banner" id="team-warning">
+        Team プランは Standard + Premium の合計が最低 5 席必要です。現在の合計席数が 4 席以下です。
+      </div>
+      <div class="plan-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:230px;">プラン</th>
+              <th class="num" style="width:140px;">単価 (USD/月)</th>
+              <th class="num" style="width:90px;">人数</th>
+              <th class="num" style="width:170px;">小計</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="row-pro">
+              <td><div class="plan-name">Pro</div><div class="plan-desc">個人向け・標準利用量</div><div class="plan-note" style="font-style:normal;color:#888;">目安上限 〜5,000万トークン/月</div></td>
+              <td class="unit-price"><div class="price-main" id="price-pro-val">$20</div><div class="price-sub" id="price-pro-note">/月/人</div></td>
+              <td><input type="number" class="table-num-input" id="d-count-pro" value="0" min="0" oninput="recalcDetail()"></td>
+              <td class="subtotal" id="d-sub-pro"><span class="subtotal-zero">$0</span></td>
+            </tr>
+            <tr id="row-max5">
+              <td><div class="plan-name">Max 5x</div><div class="plan-desc">Pro の 5 倍の利用量</div><div class="plan-note" style="font-style:normal;color:#888;">目安上限 〜2.5億トークン/月</div><div class="plan-note">年払い非対応（月払い固定）</div></td>
+              <td class="unit-price"><div class="price-main">$100</div><div class="price-sub">/月/人</div></td>
+              <td><input type="number" class="table-num-input" id="d-count-max5" value="0" min="0" oninput="recalcDetail()"></td>
+              <td class="subtotal" id="d-sub-max5"><span class="subtotal-zero">$0</span></td>
+            </tr>
+            <tr id="row-max20">
+              <td><div class="plan-name">Max 20x</div><div class="plan-desc">Pro の 20 倍の利用量</div><div class="plan-note" style="font-style:normal;color:#888;">目安上限 〜10億トークン/月</div><div class="plan-note">年払い非対応（月払い固定）</div></td>
+              <td class="unit-price"><div class="price-main">$200</div><div class="price-sub">/月/人</div></td>
+              <td><input type="number" class="table-num-input" id="d-count-max20" value="0" min="0" oninput="recalcDetail()"></td>
+              <td class="subtotal" id="d-sub-max20"><span class="subtotal-zero">$0</span></td>
+            </tr>
+            <tr id="row-teamstd">
+              <td><div class="plan-name">Team Standard</div><div class="plan-desc">最低 5 席（Standard + Premium 合算）</div><div class="plan-note" style="font-style:normal;color:#888;">目安上限 〜5,000万トークン/月</div></td>
+              <td class="unit-price"><div class="price-main" id="price-teamstd-val">$25</div><div class="price-sub" id="price-teamstd-note">/月/人</div></td>
+              <td><input type="number" class="table-num-input" id="d-count-teamstd" value="0" min="0" oninput="recalcDetail()"></td>
+              <td class="subtotal" id="d-sub-teamstd"><span class="subtotal-zero">$0</span></td>
+            </tr>
+            <tr id="row-teamprem">
+              <td><div class="plan-name">Team Premium</div><div class="plan-desc">Standard の約 5 倍の利用量</div><div class="plan-note" style="font-style:normal;color:#888;">目安上限 〜2.5億トークン/月</div></td>
+              <td class="unit-price"><div class="price-main" id="price-teamprem-val">$125</div><div class="price-sub" id="price-teamprem-note">/月/人</div></td>
+              <td><input type="number" class="table-num-input" id="d-count-teamprem" value="0" min="0" oninput="recalcDetail()"></td>
+              <td class="subtotal" id="d-sub-teamprem"><span class="subtotal-zero">$0</span></td>
+            </tr>
+            <tr id="row-enterprise">
+              <td><div class="plan-name">Enterprise</div><div class="plan-desc">要問い合わせ（単価を直接入力）</div></td>
+              <td class="unit-price">
+                <div class="num-input-wrap">
+                  <span class="usd-input-label">$</span>
+                  <input type="number" class="enterprise-usd-input" id="d-price-enterprise" value="" min="0" step="1" placeholder="単価" oninput="recalcDetail()">
+                  <span class="usd-input-label">/月/人</span>
+                </div>
+              </td>
+              <td><input type="number" class="table-num-input" id="d-count-enterprise" value="0" min="0" oninput="recalcDetail()"></td>
+              <td class="subtotal" id="d-sub-enterprise"><span class="subtotal-zero">$0</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="detail-total">
+        <span class="dt-label">プラン直接指定 合計</span>
+        <span>月 <span class="dt-mo" id="d-total-jpy-mo">0 円</span></span>
+        <span>年 <span class="dt-yr" id="d-total-jpy-yr">0 円</span></span>
+      </div>
+    </div>
+  </details>
+
+  <div class="action-bar">
+    <button class="print-btn" onclick="window.print()">印刷 / PDF 保存</button>
+  </div>
+
+  <div class="footer">
+    <b>料金出典:</b> claude.com/pricing（2026年6月時点）。最新料金・条件は公式サイトで要確認。価格は税抜・地域により変動の可能性あり。<br>
+    年払いの Pro は $17/月（$200/年一括相当）、Team Standard は $20/月、Team Premium は $100/月（年額換算）。Max 5x / Max 20x は月払いのみのため請求サイクル切替の影響を受けません。<br>
+    Team プランは最低5席（Standard + Premium 合算）の条件あり。Enterprise は要問い合わせ。<br>
+    トークン消費・従量課金換算は畠山事務所の実測値（ccusage計測）をもとにした概算で、利用内容により大きく変動します。プラン選定の参考値としてご利用ください。<br>
+    <b>プラン上限（目安）について:</b> Claude のサブスクは「トークン上限」を公表しておらず、実際の制限はレート制限（5時間ごと・週次）の形で運用されます。本ツールの目安上限は、当事務所の実測アンカー（Max 20x で約10億トークン/月をまかなった実績）を基準に、公称の相対利用量（Max 5x = Pro の5倍、Max 20x = 20倍 等）から逆算した推計値です。各役割の「想定トークン/月」と見比べて、足りるプランを選ぶ目安としてご利用ください。
+  </div>
+
+</div><!-- /.main -->
+
+<script>
+  // ===================== 料金データ =====================
+  // capLabel = プラン別の「目安トークン上限/月」。Anthropic 非公表のため、当事務所の実測
+  // アンカー（Max 20x で約10億トークン/月をまかなった実績）を基準に、公称の相対利用量
+  // （Max 5x = Pro の5倍、Max 20x = 20倍 等）から逆算した推計値。
+  const PLANS = {
+    pro:        { monthly: 20,  annual: 17,   label: 'Pro',           capLabel: '〜5,000万トークン' },
+    max5:       { monthly: 100, annual: null, label: 'Max 5x',        capLabel: '〜2.5億トークン' },
+    max20:      { monthly: 200, annual: null, label: 'Max 20x',       capLabel: '〜10億トークン' },
+    teamstd:    { monthly: 25,  annual: 20,  label: 'Team Standard',  capLabel: '〜5,000万トークン' },
+    teamprem:   { monthly: 125, annual: 100, label: 'Team Premium',   capLabel: '〜2.5億トークン' },
+    enterprise: { monthly: null, annual: null, capLabel: '要問い合わせ' },
+  };
+
+  // 契約形態ごとに選べるプラン
+  const PLAN_SETS = {
+    personal: ['pro', 'max5', 'max20'],
+    team:     ['teamstd', 'teamprem'],
+  };
+
+  // ツール定義（Cowork / Claude Code は同じClaude有料プラン内で動き追加課金なし。
+  // 違うのはワークロードの重さ＝消費トークン量の傾向と、CLIの要否）
+  const TOOLS = {
+    code:   { label: 'Claude Code' },
+    cowork: { label: 'Cowork' },
+  };
+
+  // 役割の定義。ツール別に想定トークン・従量課金換算・推奨プラン（個人/Team）を持つ
+  const ROLES = [
+    {
+      key: 'owner', name: '所長・管理者', intensity: 'ヘビー', defTool: 'code',
+      est: {
+        code:   { token: '5億〜10億+', api: '$400〜1,200', plan: 'max20', team: 'teamprem' },
+        cowork: { token: '2〜5億',     api: '$150〜600',   plan: 'max5',  team: 'teamprem' },
+      },
+    },
+    {
+      key: 'staff', name: '実務スタッフ', intensity: '標準', defTool: 'cowork',
+      est: {
+        code:   { token: '1〜3億',         api: '$100〜400', plan: 'max5', team: 'teamprem' },
+        cowork: { token: '5,000万〜1.5億', api: '$50〜200',  plan: 'max5', team: 'teamstd' },
+      },
+    },
+    {
+      key: 'spot', name: 'スポット・補助', intensity: 'ライト', defTool: 'cowork',
+      est: {
+        code:   { token: '〜5,000万', api: '〜$30', plan: 'pro', team: 'teamstd' },
+        cowork: { token: '〜3,000万', api: '〜$20', plan: 'pro', team: 'teamstd' },
+      },
+    },
+  ];
+
+  let cycle = 'monthly';
+  let contractType = 'personal'; // 'personal' | 'team'
+  const selectedTool = {}; // role.key -> toolKey
+  const selectedPlan = {}; // role.key -> planKey
+
+  // 役割×現在のツール×契約形態 から推奨プランを返す
+  function recPlan(roleKey) {
+    const r = ROLES.find(x => x.key === roleKey);
+    const e = r.est[selectedTool[roleKey]];
+    return contractType === 'team' ? e.team : e.plan;
+  }
+  ROLES.forEach(r => { selectedTool[r.key] = r.defTool; selectedPlan[r.key] = r.est[r.defTool].plan; });
+
+  function effPrice(planKey) {
+    const p = PLANS[planKey];
+    if (!p) return 0;
+    if (p.annual === null) return p.monthly;
+    return cycle === 'annual' ? p.annual : p.monthly;
+  }
+  function getCount(id) {
+    const e = document.getElementById(id);
+    if (!e) return 0;
+    const v = parseInt(e.value, 10);
+    return isNaN(v) || v < 0 ? 0 : v;
+  }
+
+  // ===================== STEP2 テーブル生成 =====================
+  function buildFinalTable() {
+    const tb = document.getElementById('final-tbody');
+    tb.innerHTML = '';
+    ROLES.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.id = 'frow-' + r.key;
+      const opts = PLAN_SETS[contractType].map(pk =>
+        '<option value="' + pk + '"' + (selectedPlan[r.key] === pk ? ' selected' : '') + '>' + PLANS[pk].label + '</option>'
+      ).join('');
+      const toolOpts = Object.keys(TOOLS).map(tk =>
+        '<option value="' + tk + '"' + (selectedTool[r.key] === tk ? ' selected' : '') + '>' + TOOLS[tk].label + '</option>'
+      ).join('');
+      const e = r.est[selectedTool[r.key]];
+      tr.innerHTML =
+        '<td class="f-role">' + r.name + '<small>' + r.intensity + '</small></td>' +
+        '<td class="center"><select class="plan-select" id="ftool-' + r.key + '" onchange="onToolChange(\'' + r.key + '\')">' + toolOpts + '</select></td>' +
+        '<td class="num"><span class="f-seats" id="fseats-' + r.key + '">0</span></td>' +
+        '<td class="num f-token" id="ftoken-' + r.key + '">' + e.token + '</td>' +
+        '<td class="num f-api" id="fapi-' + r.key + '">' + e.api + '</td>' +
+        '<td class="center"><select class="plan-select" id="fplan-' + r.key + '" onchange="onPlanChange(\'' + r.key + '\')">' + opts + '</select><div class="f-plan-cap" id="fcap-' + r.key + '"></div></td>' +
+        '<td class="num f-unit" id="funit-' + r.key + '">$0</td>' +
+        '<td class="num" id="fsub-' + r.key + '"><span class="f-sub-zero">0 円</span></td>';
+      tb.appendChild(tr);
+    });
+  }
+
+  function onPlanChange(roleKey) {
+    selectedPlan[roleKey] = document.getElementById('fplan-' + roleKey).value;
+    recalcFinal();
+  }
+
+  function onToolChange(roleKey) {
+    selectedTool[roleKey] = document.getElementById('ftool-' + roleKey).value;
+    // ツールを変えたら、そのツールの推奨プランへ寄せる
+    selectedPlan[roleKey] = recPlan(roleKey);
+    buildFinalTable();   // 想定トークン・従量換算・プラン選択肢を作り直し
+    recalcFinal();
+  }
+
+  function setContract(type) {
+    contractType = type;
+    document.getElementById('btn-personal').classList.toggle('active', type === 'personal');
+    document.getElementById('btn-team').classList.toggle('active', type === 'team');
+    document.getElementById('team-info').classList.toggle('show', type === 'team');
+    // 契約形態を切り替えたら、各役割を現在のツールに応じた推奨プランに戻す
+    ROLES.forEach(r => selectedPlan[r.key] = recPlan(r.key));
+    buildFinalTable();
+    recalcFinal();
+  }
+
+  // ===================== STEP2 最適プラン提案 =====================
+  function propose() {
+    const card = document.getElementById('propose-card');
+    const seats = ROLES.reduce((s, r) => s + getCount('count-' + r.key), 0);
+
+    if (seats === 0) {
+      document.getElementById('pc-badge').className = 'pc-badge personal';
+      document.getElementById('pc-badge').textContent = '—';
+      document.getElementById('pc-month-wrap').style.display = 'none';
+      document.getElementById('pc-reason').textContent = 'まずSTEP1で、Claude Codeを触る人数を入力してください。';
+      document.getElementById('pc-roles').innerHTML = '';
+      card.classList.add('show');
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    document.getElementById('pc-month-wrap').style.display = '';
+
+    // 個人プラン既定構成とTeamプラン既定構成の月額（USD）を比較
+    const personalUsd = ROLES.reduce((s, r) => s + effPrice(r.est[selectedTool[r.key]].plan) * getCount('count-' + r.key), 0);
+    const teamUsd = ROLES.reduce((s, r) => s + effPrice(r.est[selectedTool[r.key]].team) * getCount('count-' + r.key), 0);
+    const ownerCount = getCount('count-owner');
+
+    let rec, reason;
+    if (seats < 5) {
+      rec = 'personal';
+      reason = '5名未満のため、最低5席が必要なTeamプランより個人プラン契約が向いています。各自がそれぞれ契約する形です。';
+    } else if (personalUsd <= teamUsd) {
+      rec = 'personal';
+      reason = '5席以上ありますが、この人数構成では個人プランの方が月額を抑えられます。請求やメンバー管理を一元化したい場合はTeamプランも選べます。';
+    } else {
+      rec = 'team';
+      reason = '5席以上あり、Teamプランなら請求・メンバー管理を一元化しつつ月額も抑えられます。';
+    }
+    if (rec === 'team' && ownerCount > 0) {
+      reason += '※司令塔級にヘビーな使い方をする所長は、Team Premiumの上限を超える場合があり、所長のみ個人Max 20x併用も検討余地ありです。';
+    }
+
+    setContract(rec);
+
+    document.getElementById('pc-badge').className = 'pc-badge ' + rec;
+    document.getElementById('pc-badge').textContent = rec === 'team' ? 'Teamプランで契約' : '個人プランで契約';
+    document.getElementById('pc-reason').textContent = reason;
+    document.getElementById('pc-roles').innerHTML = ROLES
+      .filter(r => getCount('count-' + r.key) > 0)
+      .map(r => '<b>' + r.name + '</b> ' + getCount('count-' + r.key) + '名 → ' + TOOLS[selectedTool[r.key]].label + '／' + PLANS[selectedPlan[r.key]].label)
+      .join(' ／ ');
+
+    card.classList.add('show');
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ===================== STEP1+3 計算 =====================
+  function recalcFinal() {
+    const fx = parseFloat(document.getElementById('fx-rate').value) || 155;
+    let totalUsd = 0, totalSeats = 0;
+
+    ROLES.forEach(r => {
+      const count = getCount('count-' + r.key);
+      totalSeats += count;
+      const planKey = selectedPlan[r.key];
+      const price = effPrice(planKey);
+      const subUsd = price * count;
+      totalUsd += subUsd;
+
+      document.getElementById('rcard-' + r.key).classList.toggle('has-count', count > 0);
+      const row = document.getElementById('frow-' + r.key);
+      if (row) row.classList.toggle('empty-role', count === 0);
+
+      document.getElementById('fseats-' + r.key).textContent = count;
+      document.getElementById('funit-' + r.key).textContent = '$' + price;
+      document.getElementById('fcap-' + r.key).textContent = '目安上限 ' + PLANS[planKey].capLabel + '/月';
+      const subCell = document.getElementById('fsub-' + r.key);
+      subCell.innerHTML = count === 0
+        ? '<span class="f-sub-zero">0 円</span>'
+        : '<span class="f-sub-jpy">' + fmt(subUsd * fx) + ' 円</span>';
+    });
+
+    const mo = Math.round(totalUsd * fx);
+    document.getElementById('step1-total').textContent = fmt(totalSeats);
+    document.getElementById('final-seats').textContent = fmt(totalSeats) + ' アカウント';
+    document.getElementById('final-usd').textContent = '$' + fmt(totalUsd);
+    document.getElementById('final-jpy-mo').textContent = fmt(mo) + ' 円';
+    document.getElementById('final-jpy-yr').textContent = fmt(mo * 12) + ' 円';
+
+    // 提案カードを表示中なら月額を同期
+    const pcm = document.getElementById('pc-month');
+    if (pcm) pcm.textContent = fmt(mo) + ' 円';
+
+    // Teamプランは最低5席
+    const seatWarn = contractType === 'team' && totalSeats > 0 && totalSeats < 5;
+    document.getElementById('seat-warning').classList.toggle('show', seatWarn);
+  }
+
+  // ===================== 補足：プラン直接指定 =====================
+  function recalcDetail() {
+    const fx = parseFloat(document.getElementById('fx-rate').value) || 155;
+    const keys = ['pro', 'max5', 'max20', 'teamstd', 'teamprem', 'enterprise'];
+    let totalUsd = 0;
+
+    keys.forEach(key => {
+      let price;
+      if (key === 'enterprise') {
+        const v = parseFloat(document.getElementById('d-price-enterprise').value);
+        price = isNaN(v) ? 0 : v;
+      } else {
+        price = effPrice(key);
+      }
+      const count = getCount('d-count-' + key);
+      const subUsd = price * count;
+      totalUsd += subUsd;
+
+      const cell = document.getElementById('d-sub-' + key);
+      cell.innerHTML = (count === 0 || price === 0)
+        ? '<span class="subtotal-zero">$0</span>'
+        : '<div class="subtotal-usd">$' + fmt(subUsd) + '</div><div class="subtotal-jpy">' + fmt(subUsd * fx) + ' 円</div>';
+    });
+
+    const mo = Math.round(totalUsd * fx);
+    document.getElementById('d-total-jpy-mo').textContent = fmt(mo) + ' 円';
+    document.getElementById('d-total-jpy-yr').textContent = fmt(mo * 12) + ' 円';
+
+    const teamTotal = getCount('d-count-teamstd') + getCount('d-count-teamprem');
+    document.getElementById('team-warning').classList.toggle('show', teamTotal > 0 && teamTotal < 5);
+  }
+
+  // ===================== サイクル切替 =====================
+  function updateUnitPriceDisplay() {
+    const note = cycle === 'annual' ? '/月/人（年払い）' : '/月/人';
+    document.getElementById('price-pro-val').textContent = '$' + effPrice('pro');
+    document.getElementById('price-pro-note').textContent = note;
+    document.getElementById('price-teamstd-val').textContent = '$' + effPrice('teamstd');
+    document.getElementById('price-teamstd-note').textContent = note;
+    document.getElementById('price-teamprem-val').textContent = '$' + effPrice('teamprem');
+    document.getElementById('price-teamprem-note').textContent = note;
+  }
+
+  function setCycle(c) {
+    cycle = c;
+    document.getElementById('btn-monthly').classList.toggle('active', c === 'monthly');
+    document.getElementById('btn-annual').classList.toggle('active', c === 'annual');
+    updateUnitPriceDisplay();
+    recalcAll();
+  }
+
+  function recalcAll() { recalcFinal(); recalcDetail(); }
+  function fmt(n) { return Math.round(n).toLocaleString('ja-JP'); }
+
+  // ===================== 初期化 =====================
+  buildFinalTable();
+  updateUnitPriceDisplay();
+  recalcAll();
+</script>
+</body>
+</html>
