@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta name="robots" content="noindex,nofollow">
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
@@ -149,15 +147,15 @@
   .final-wrap { background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; margin-bottom: 16px; }
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   thead th {
-    background: var(--ink); color: #fff; padding: 11px 9px; text-align: left;
-    font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap;
+    background: var(--ink); color: #fff; padding: 10px 7px; text-align: left;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap;
   }
   thead th.num { text-align: right; }
   thead th.center { text-align: center; }
   tbody tr { border-bottom: 1px solid #f0ece7; }
   tbody tr:last-child { border-bottom: none; }
   tbody tr:hover { background: #fdf9f7; }
-  td { padding: 13px 9px; vertical-align: middle; }
+  td { padding: 12px 7px; vertical-align: middle; }
   td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   td.center { text-align: center; }
   .f-role { font-weight: 700; color: #1a1a1a; }
@@ -166,10 +164,12 @@
   .f-token { font-size: 12.5px; color: #555; }
   .f-api { font-size: 12.5px; color: #555; }
   .plan-select {
-    padding: 7px 10px; border: 1.5px solid #d0cbc4; border-radius: 6px;
-    font-size: 13px; font-family: inherit; background: #fff; cursor: pointer; transition: border-color .15s;
+    padding: 6px 8px; border: 1.5px solid #d0cbc4; border-radius: 6px;
+    font-size: 12.5px; font-family: inherit; background: #fff; cursor: pointer; transition: border-color .15s;
   }
   .plan-select:focus { outline: none; border-color: var(--accent); }
+  .contract-select { min-width: 72px; }
+  tbody tr.empty-role .plan-select { opacity: .55; }
   .f-plan-cap { font-size: 10.5px; color: #888; margin-top: 5px; line-height: 1.4; }
   .f-unit { font-size: 13px; color: #444; font-variant-numeric: tabular-nums; }
   .f-sub-jpy { font-size: 15px; font-weight: 700; color: #1a1a1a; }
@@ -196,6 +196,17 @@
     padding: 10px 16px; font-size: 13px; color: #856404; margin-bottom: 16px; display: none;
   }
   .mismatch-banner.show { display: block; }
+  .cap-banner {
+    border-radius: 6px; padding: 10px 16px; font-size: 13px; margin-bottom: 16px; display: none;
+  }
+  .cap-banner.show { display: block; }
+  .cap-banner.over { background: #fdecea; border: 1px solid #e74c3c; color: #a93226; }
+  .cap-banner.warn { background: #fff3cd; border: 1px solid #ffc107; color: #856404; }
+  /* 想定トークンが目安上限を超える行のハイライト */
+  tbody tr.cap-over td { background: #fdecea; }
+  tbody tr.cap-warn td { background: #fffaf0; }
+  .f-plan-cap.over { color: #c0392b; font-weight: 700; }
+  .f-plan-cap.warn { color: #b8860b; font-weight: 600; }
 
   /* 契約形態トグル */
   .contract-toggle-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -418,16 +429,16 @@
     <span class="step-badge">STEP 3</span>
     <span class="section-title">調整して最終決定</span>
   </div>
-  <p class="section-note">提案をもとに、役割ごとのツール（Cowork／Claude Code）・契約形態・プランを選び直して最終決定します。ツールを切り替えると想定トークン量と推奨プランが連動します。定額プランは「従量課金（API）ならいくら相当か」で選ぶのがコツです。</p>
+  <p class="section-note">提案をもとに、役割ごとのツール（Cowork／Claude Code）・契約形態・プランを選び直して最終決定します。<b>契約形態は役割ごとに選べます</b>（例：所長だけ個人 Max 20x、メンバーは Team で一括）。ツールや契約形態を切り替えると想定トークン量と推奨プランが連動します。定額プランは「従量課金（API）ならいくら相当か」で選ぶのがコツです。</p>
 
-  <!-- 契約形態トグル -->
+  <!-- 契約形態トグル（全員まとめて切替のクイック設定。個別は表の「契約形態」列で上書き可） -->
   <div class="contract-toggle-row">
-    <span class="setting-label">契約形態</span>
+    <span class="setting-label">契約形態を一括設定</span>
     <div class="toggle-wrap">
-      <button class="toggle-btn active" id="btn-personal" onclick="setContract('personal')">個人プランで契約</button>
-      <button class="toggle-btn" id="btn-team" onclick="setContract('team')">Teamプランで契約</button>
+      <button class="toggle-btn active" id="btn-personal" onclick="setContract('personal')">全員 個人プラン</button>
+      <button class="toggle-btn" id="btn-team" onclick="setContract('team')">全員 Teamプラン</button>
     </div>
-    <span style="font-size:11.5px;color:#888;">個人=各自で契約／Team=事務所で一括契約・中央管理</span>
+    <span style="font-size:11.5px;color:#888;">個人=各自で契約／Team=事務所で一括契約・中央管理。役割ごとの変更は下の表の「契約形態」列で。</span>
   </div>
 
   <!-- Team説明 -->
@@ -441,18 +452,22 @@
     Teamプランは最低5席が必要です。現在の合計が5席未満です。Pro/Max（個人プラン）への切替もご検討ください。
   </div>
 
+  <!-- 目安上限オーバー 警告 -->
+  <div class="cap-banner" id="cap-warning"></div>
+
   <div class="final-wrap">
     <table>
       <thead>
         <tr>
-          <th style="width:130px;">役割</th>
-          <th class="center" style="width:120px;">ツール（変更可）</th>
-          <th class="num" style="width:60px;">人数</th>
-          <th class="num" style="width:120px;">想定トークン/月</th>
-          <th class="num" style="width:120px;">従量課金換算/月</th>
-          <th class="center" style="width:150px;">プラン（変更可）<br><span style="font-weight:400;color:#bbb;font-size:10px;">目安上限つき</span></th>
-          <th class="num" style="width:90px;">単価/人</th>
-          <th class="num" style="width:120px;">小計</th>
+          <th style="width:104px;">役割</th>
+          <th class="center" style="width:96px;">ツール</th>
+          <th class="num" style="width:46px;">人数</th>
+          <th class="num" style="width:104px;">想定トークン/月</th>
+          <th class="num" style="width:104px;">従量課金換算/月</th>
+          <th class="center" style="width:86px;">契約形態</th>
+          <th class="center" style="width:140px;">プラン<br><span style="font-weight:400;color:#bbb;font-size:10px;">目安上限つき</span></th>
+          <th class="num" style="width:72px;">単価/人</th>
+          <th class="num" style="width:104px;">小計</th>
         </tr>
       </thead>
       <tbody id="final-tbody"><!-- JS生成 --></tbody>
@@ -576,12 +591,12 @@
   // アンカー（Max 20x で約10億トークン/月をまかなった実績）を基準に、公称の相対利用量
   // （Max 5x = Pro の5倍、Max 20x = 20倍 等）から逆算した推計値。
   const PLANS = {
-    pro:        { monthly: 20,  annual: 17,   label: 'Pro',           capLabel: '〜5,000万トークン' },
-    max5:       { monthly: 100, annual: null, label: 'Max 5x',        capLabel: '〜2.5億トークン' },
-    max20:      { monthly: 200, annual: null, label: 'Max 20x',       capLabel: '〜10億トークン' },
-    teamstd:    { monthly: 25,  annual: 20,  label: 'Team Standard',  capLabel: '〜5,000万トークン' },
-    teamprem:   { monthly: 125, annual: 100, label: 'Team Premium',   capLabel: '〜2.5億トークン' },
-    enterprise: { monthly: null, annual: null, capLabel: '要問い合わせ' },
+    pro:        { monthly: 20,  annual: 17,   label: 'Pro',           capLabel: '〜5,000万トークン', capTokens: 5e7 },
+    max5:       { monthly: 100, annual: null, label: 'Max 5x',        capLabel: '〜2.5億トークン',   capTokens: 2.5e8 },
+    max20:      { monthly: 200, annual: null, label: 'Max 20x',       capLabel: '〜10億トークン',    capTokens: 1e9 },
+    teamstd:    { monthly: 25,  annual: 20,  label: 'Team Standard',  capLabel: '〜5,000万トークン', capTokens: 5e7 },
+    teamprem:   { monthly: 125, annual: 100, label: 'Team Premium',   capLabel: '〜2.5億トークン',   capTokens: 2.5e8 },
+    enterprise: { monthly: null, annual: null, capLabel: '要問い合わせ', capTokens: Infinity },
   };
 
   // 契約形態ごとに選べるプラン
@@ -602,38 +617,54 @@
     {
       key: 'owner', name: '所長・管理者', intensity: 'ヘビー', defTool: 'code',
       est: {
-        code:   { token: '5億〜10億+', api: '$400〜1,200', plan: 'max20', team: 'teamprem' },
-        cowork: { token: '2〜5億',     api: '$150〜600',   plan: 'max5',  team: 'teamprem' },
+        code:   { token: '5億〜10億+', api: '$400〜1,200', plan: 'max20', team: 'teamprem', tokenLo: 5e8, tokenHi: 1e9 },
+        cowork: { token: '2〜5億',     api: '$150〜600',   plan: 'max5',  team: 'teamprem', tokenLo: 2e8, tokenHi: 5e8 },
       },
     },
     {
       key: 'staff', name: '実務スタッフ', intensity: '標準', defTool: 'cowork',
       est: {
-        code:   { token: '1〜3億',         api: '$100〜400', plan: 'max5', team: 'teamprem' },
-        cowork: { token: '5,000万〜1.5億', api: '$50〜200',  plan: 'max5', team: 'teamstd' },
+        code:   { token: '1〜3億',         api: '$100〜400', plan: 'max5', team: 'teamprem', tokenLo: 1e8, tokenHi: 3e8 },
+        cowork: { token: '5,000万〜1.5億', api: '$50〜200',  plan: 'max5', team: 'teamstd', tokenLo: 5e7, tokenHi: 1.5e8 },
       },
     },
     {
       key: 'spot', name: 'スポット・補助', intensity: 'ライト', defTool: 'cowork',
       est: {
-        code:   { token: '〜5,000万', api: '〜$30', plan: 'pro', team: 'teamstd' },
-        cowork: { token: '〜3,000万', api: '〜$20', plan: 'pro', team: 'teamstd' },
+        code:   { token: '〜5,000万', api: '〜$30', plan: 'pro', team: 'teamstd', tokenLo: 1e7, tokenHi: 5e7 },
+        cowork: { token: '〜3,000万', api: '〜$20', plan: 'pro', team: 'teamstd', tokenLo: 5e6, tokenHi: 3e7 },
       },
     },
   ];
 
   let cycle = 'monthly';
-  let contractType = 'personal'; // 'personal' | 'team'
-  const selectedTool = {}; // role.key -> toolKey
-  const selectedPlan = {}; // role.key -> planKey
+  const selectedTool = {};     // role.key -> toolKey
+  const selectedPlan = {};     // role.key -> planKey
+  const selectedContract = {}; // role.key -> 'personal' | 'team'（役割ごとに混在可）
 
-  // 役割×現在のツール×契約形態 から推奨プランを返す
+  // 役割×現在のツール×その役割の契約形態 から推奨プランを返す
   function recPlan(roleKey) {
     const r = ROLES.find(x => x.key === roleKey);
     const e = r.est[selectedTool[roleKey]];
-    return contractType === 'team' ? e.team : e.plan;
+    return selectedContract[roleKey] === 'team' ? e.team : e.plan;
   }
-  ROLES.forEach(r => { selectedTool[r.key] = r.defTool; selectedPlan[r.key] = r.est[r.defTool].plan; });
+  ROLES.forEach(r => {
+    selectedTool[r.key] = r.defTool;
+    selectedContract[r.key] = 'personal';
+    selectedPlan[r.key] = r.est[r.defTool].plan;
+  });
+
+  // 想定トークンと選択中プランの目安上限を比べる
+  //  'over' = 下端でも上限超（明確に不足） / 'warn' = 上端だけ上限超（繁忙期は超過の可能性） / 'ok'
+  function capStatus(roleKey) {
+    const r = ROLES.find(x => x.key === roleKey);
+    const e = r.est[selectedTool[roleKey]];
+    const cap = PLANS[selectedPlan[roleKey]].capTokens;
+    if (!cap || cap === Infinity) return 'ok';
+    if (e.tokenLo > cap) return 'over';
+    if (e.tokenHi > cap) return 'warn';
+    return 'ok';
+  }
 
   function effPrice(planKey) {
     const p = PLANS[planKey];
@@ -655,11 +686,14 @@
     ROLES.forEach(r => {
       const tr = document.createElement('tr');
       tr.id = 'frow-' + r.key;
-      const opts = PLAN_SETS[contractType].map(pk =>
+      const opts = PLAN_SETS[selectedContract[r.key]].map(pk =>
         '<option value="' + pk + '"' + (selectedPlan[r.key] === pk ? ' selected' : '') + '>' + PLANS[pk].label + '</option>'
       ).join('');
       const toolOpts = Object.keys(TOOLS).map(tk =>
         '<option value="' + tk + '"' + (selectedTool[r.key] === tk ? ' selected' : '') + '>' + TOOLS[tk].label + '</option>'
+      ).join('');
+      const contractOpts = [['personal', '個人'], ['team', 'Team']].map(([cv, cl]) =>
+        '<option value="' + cv + '"' + (selectedContract[r.key] === cv ? ' selected' : '') + '>' + cl + '</option>'
       ).join('');
       const e = r.est[selectedTool[r.key]];
       tr.innerHTML =
@@ -668,6 +702,7 @@
         '<td class="num"><span class="f-seats" id="fseats-' + r.key + '">0</span></td>' +
         '<td class="num f-token" id="ftoken-' + r.key + '">' + e.token + '</td>' +
         '<td class="num f-api" id="fapi-' + r.key + '">' + e.api + '</td>' +
+        '<td class="center"><select class="plan-select contract-select" id="fcontract-' + r.key + '" onchange="onContractChange(\'' + r.key + '\')">' + contractOpts + '</select></td>' +
         '<td class="center"><select class="plan-select" id="fplan-' + r.key + '" onchange="onPlanChange(\'' + r.key + '\')">' + opts + '</select><div class="f-plan-cap" id="fcap-' + r.key + '"></div></td>' +
         '<td class="num f-unit" id="funit-' + r.key + '">$0</td>' +
         '<td class="num" id="fsub-' + r.key + '"><span class="f-sub-zero">0 円</span></td>';
@@ -688,15 +723,35 @@
     recalcFinal();
   }
 
-  function setContract(type) {
-    contractType = type;
-    document.getElementById('btn-personal').classList.toggle('active', type === 'personal');
-    document.getElementById('btn-team').classList.toggle('active', type === 'team');
-    document.getElementById('team-info').classList.toggle('show', type === 'team');
-    // 契約形態を切り替えたら、各役割を現在のツールに応じた推奨プランに戻す
-    ROLES.forEach(r => selectedPlan[r.key] = recPlan(r.key));
+  // 役割ごとの契約形態切替（個人 ⇔ Team）
+  function onContractChange(roleKey) {
+    selectedContract[roleKey] = document.getElementById('fcontract-' + roleKey).value;
+    selectedPlan[roleKey] = recPlan(roleKey); // 契約形態に合うプランへ寄せる
     buildFinalTable();
     recalcFinal();
+    syncContractToggle();
+  }
+
+  // 全員まとめて契約形態を設定（クイック設定ボタン）
+  function setContract(type) {
+    ROLES.forEach(r => {
+      selectedContract[r.key] = type;
+      selectedPlan[r.key] = recPlan(r.key);
+    });
+    buildFinalTable();
+    recalcFinal();
+    syncContractToggle();
+  }
+
+  // 一括トグルの見た目を、各行の契約形態の状態に合わせる（全員同じならactive、混在なら両方オフ）
+  function syncContractToggle() {
+    const vals = ROLES.map(r => selectedContract[r.key]);
+    const allPersonal = vals.every(v => v === 'personal');
+    const allTeam = vals.every(v => v === 'team');
+    const anyTeam = vals.some(v => v === 'team');
+    document.getElementById('btn-personal').classList.toggle('active', allPersonal);
+    document.getElementById('btn-team').classList.toggle('active', allTeam);
+    document.getElementById('team-info').classList.toggle('show', anyTeam);
   }
 
   // ===================== STEP2 最適プラン提案 =====================
@@ -720,30 +775,45 @@
     const personalUsd = ROLES.reduce((s, r) => s + effPrice(r.est[selectedTool[r.key]].plan) * getCount('count-' + r.key), 0);
     const teamUsd = ROLES.reduce((s, r) => s + effPrice(r.est[selectedTool[r.key]].team) * getCount('count-' + r.key), 0);
     const ownerCount = getCount('count-owner');
+    // 所長が Claude Code（ヘビー）= Team Premium の目安上限を超えやすい構成
+    const ownerHeavyCode = ownerCount > 0 && selectedTool['owner'] === 'code';
 
-    let rec, reason;
+    let reason;
     if (seats < 5) {
-      rec = 'personal';
+      ROLES.forEach(r => selectedContract[r.key] = 'personal');
       reason = '5名未満のため、最低5席が必要なTeamプランより個人プラン契約が向いています。各自がそれぞれ契約する形です。';
     } else if (personalUsd <= teamUsd) {
-      rec = 'personal';
+      ROLES.forEach(r => selectedContract[r.key] = 'personal');
       reason = '5席以上ありますが、この人数構成では個人プランの方が月額を抑えられます。請求やメンバー管理を一元化したい場合はTeamプランも選べます。';
     } else {
-      rec = 'team';
-      reason = '5席以上あり、Teamプランなら請求・メンバー管理を一元化しつつ月額も抑えられます。';
+      // 5席以上：メンバーはTeam一括。所長がヘビーなClaude Code利用なら所長だけ個人Max 20xを併用
+      ROLES.forEach(r => selectedContract[r.key] = 'team');
+      if (ownerHeavyCode) {
+        selectedContract['owner'] = 'personal';
+        reason = '5席以上あり、メンバーはTeamプランで請求・メンバー管理を一元化。ただし司令塔級にヘビーな所長はTeam Premiumの目安上限を超えるため、所長のみ個人Max 20xを併用する構成を提案します。';
+      } else {
+        reason = '5席以上あり、Teamプランなら請求・メンバー管理を一元化しつつ月額も抑えられます。';
+      }
     }
-    if (rec === 'team' && ownerCount > 0) {
-      reason += '※司令塔級にヘビーな使い方をする所長は、Team Premiumの上限を超える場合があり、所長のみ個人Max 20x併用も検討余地ありです。';
-    }
+    // 決めた契約形態に合わせて各役割の推奨プランを更新し、表へ反映
+    ROLES.forEach(r => selectedPlan[r.key] = recPlan(r.key));
+    buildFinalTable();
+    recalcFinal();
+    syncContractToggle();
 
-    setContract(rec);
+    // バッジ（全員個人 / 全員Team / 併用 を判定）
+    const liveVals = ROLES.filter(r => getCount('count-' + r.key) > 0).map(r => selectedContract[r.key]);
+    let badgeClass, badgeText;
+    if (liveVals.every(v => v === 'personal')) { badgeClass = 'personal'; badgeText = '個人プランで契約'; }
+    else if (liveVals.every(v => v === 'team')) { badgeClass = 'team'; badgeText = 'Teamプランで契約'; }
+    else { badgeClass = 'team'; badgeText = '個人＋Teamの併用'; }
 
-    document.getElementById('pc-badge').className = 'pc-badge ' + rec;
-    document.getElementById('pc-badge').textContent = rec === 'team' ? 'Teamプランで契約' : '個人プランで契約';
+    document.getElementById('pc-badge').className = 'pc-badge ' + badgeClass;
+    document.getElementById('pc-badge').textContent = badgeText;
     document.getElementById('pc-reason').textContent = reason;
     document.getElementById('pc-roles').innerHTML = ROLES
       .filter(r => getCount('count-' + r.key) > 0)
-      .map(r => '<b>' + r.name + '</b> ' + getCount('count-' + r.key) + '名 → ' + TOOLS[selectedTool[r.key]].label + '／' + PLANS[selectedPlan[r.key]].label)
+      .map(r => '<b>' + r.name + '</b> ' + getCount('count-' + r.key) + '名 → ' + TOOLS[selectedTool[r.key]].label + '／' + PLANS[selectedPlan[r.key]].label + '（' + (selectedContract[r.key] === 'team' ? 'Team' : '個人') + '）')
       .join(' ／ ');
 
     card.classList.add('show');
@@ -754,6 +824,7 @@
   function recalcFinal() {
     const fx = parseFloat(document.getElementById('fx-rate').value) || 155;
     let totalUsd = 0, totalSeats = 0;
+    const overRoles = [], warnRoles = [];
 
     ROLES.forEach(r => {
       const count = getCount('count-' + r.key);
@@ -769,12 +840,38 @@
 
       document.getElementById('fseats-' + r.key).textContent = count;
       document.getElementById('funit-' + r.key).textContent = '$' + price;
-      document.getElementById('fcap-' + r.key).textContent = '目安上限 ' + PLANS[planKey].capLabel + '/月';
+
+      // 目安上限チェック（人数0の役割は判定しない）
+      const status = count > 0 ? capStatus(r.key) : 'ok';
+      if (status === 'over') overRoles.push(r.name);
+      else if (status === 'warn') warnRoles.push(r.name);
+      const capEl = document.getElementById('fcap-' + r.key);
+      capEl.className = 'f-plan-cap' + (status === 'ok' ? '' : ' ' + status);
+      capEl.textContent = '目安上限 ' + PLANS[planKey].capLabel + '/月'
+        + (status === 'over' ? ' ／ ⚠️ 上限不足' : status === 'warn' ? ' ／ ⚠️ 超過の可能性' : '');
+      if (row) {
+        row.classList.toggle('cap-over', status === 'over');
+        row.classList.toggle('cap-warn', status === 'warn');
+      }
+
       const subCell = document.getElementById('fsub-' + r.key);
       subCell.innerHTML = count === 0
         ? '<span class="f-sub-zero">0 円</span>'
         : '<span class="f-sub-jpy">' + fmt(subUsd * fx) + ' 円</span>';
     });
+
+    // 目安上限オーバーのサマリバナー（over優先、なければwarn）
+    const capBanner = document.getElementById('cap-warning');
+    if (overRoles.length) {
+      capBanner.className = 'cap-banner over show';
+      capBanner.textContent = '⚠️ ' + overRoles.join('・') + ' は、想定トークンが選択中プランの目安上限を超えています。上位プラン、または所長は個人 Max 20x の併用をご検討ください。';
+    } else if (warnRoles.length) {
+      capBanner.className = 'cap-banner warn show';
+      capBanner.textContent = '⚠️ ' + warnRoles.join('・') + ' は、繁忙期など使い方によっては目安上限を超える可能性があります。上位プランも候補にご検討ください。';
+    } else {
+      capBanner.className = 'cap-banner';
+      capBanner.textContent = '';
+    }
 
     const mo = Math.round(totalUsd * fx);
     document.getElementById('step1-total').textContent = fmt(totalSeats);
@@ -787,8 +884,10 @@
     const pcm = document.getElementById('pc-month');
     if (pcm) pcm.textContent = fmt(mo) + ' 円';
 
-    // Teamプランは最低5席
-    const seatWarn = contractType === 'team' && totalSeats > 0 && totalSeats < 5;
+    // Teamプランは最低5席（Teamを選んでいる役割の合計人数で判定）
+    const teamSeats = ROLES.reduce((s, r) =>
+      s + (selectedContract[r.key] === 'team' ? getCount('count-' + r.key) : 0), 0);
+    const seatWarn = teamSeats > 0 && teamSeats < 5;
     document.getElementById('seat-warning').classList.toggle('show', seatWarn);
   }
 
@@ -848,6 +947,7 @@
 
   // ===================== 初期化 =====================
   buildFinalTable();
+  syncContractToggle();
   updateUnitPriceDisplay();
   recalcAll();
 </script>
