@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>税理士事務所向け AIセキュリティポリシー判定ツール</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --ink:#1f2733; --sub:#5b6675;
+    --line:#e3e7ee; --brand:#1f5fa6; --brand-d:#16487d;
+    --yes:#e8f4ec; --yes-b:#2f8f56; --no:#fdecec; --no-b:#cf4040;
+    --mask:#fef6e7; --mask-b:#c98a16; --warn:#fff4e5; --warn-b:#d98324;
+    --code:#0f1722;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Meiryo UI","メイリオ",-apple-system,"Segoe UI",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.7;font-size:15px}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 20px 80px}
+  header.app{background:linear-gradient(135deg,var(--brand),var(--brand-d));color:#fff;
+    border-radius:16px;padding:28px 30px;margin-bottom:8px}
+  header.app h1{margin:0 0 6px;font-size:24px;letter-spacing:.02em}
+  header.app p{margin:0;opacity:.92;font-size:14px}
+  .firm{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .firm input{flex:1;min-width:220px;padding:9px 12px;border:none;border-radius:8px;font-size:14px}
+  .firm label{font-size:13px;opacity:.9}
+
+  /* steps nav */
+  .steps{display:flex;gap:8px;margin:22px 0 18px;flex-wrap:wrap}
+  .steps button{flex:1;min-width:150px;border:1px solid var(--line);background:var(--card);
+    color:var(--sub);border-radius:12px;padding:12px 10px;cursor:pointer;font-size:13.5px;
+    font-weight:700;transition:.15s;text-align:left}
+  .steps button .n{display:inline-flex;width:24px;height:24px;border-radius:50%;
+    background:#eef1f6;color:var(--sub);align-items:center;justify-content:center;
+    font-size:13px;margin-right:8px}
+  .steps button.active{border-color:var(--brand);color:var(--brand);box-shadow:0 2px 10px rgba(31,95,166,.12)}
+  .steps button.active .n{background:var(--brand);color:#fff}
+  .steps button.done .n{background:var(--yes-b);color:#fff}
+
+  .panel{visibility:hidden;height:0;overflow:hidden;pointer-events:none}
+  .panel.active{visibility:visible;height:auto;overflow:visible;pointer-events:auto;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .lead{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 22px;margin-bottom:18px}
+  .lead h2{margin:0 0 8px;font-size:18px;color:var(--brand-d)}
+  .lead p{margin:6px 0;font-size:14px;color:var(--sub)}
+  .callout{background:var(--warn);border:1px solid var(--warn-b);border-left-width:5px;
+    border-radius:10px;padding:12px 16px;margin:12px 0;font-size:13.5px}
+  .callout b{color:#9a5a10}
+
+  .group-title{font-size:15px;font-weight:800;color:var(--brand-d);margin:24px 0 10px;
+    padding-bottom:6px;border-bottom:2px solid var(--line)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;margin-bottom:12px}
+  .card .q{font-weight:700;font-size:15px;margin-bottom:6px}
+  .card .scen{font-size:13px;color:var(--no-b);background:var(--no);border-radius:8px;
+    padding:8px 11px;margin:8px 0;border:1px solid #f3cccc}
+  .card .scen b{font-weight:700}
+  .card .note{font-size:12.5px;color:var(--sub);margin-top:6px}
+  .opts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .opts button{border:1.5px solid var(--line);background:#fafbfc;border-radius:9px;
+    padding:8px 16px;cursor:pointer;font-size:13.5px;font-weight:700;color:var(--sub);transition:.12s}
+  .opts button:hover{border-color:var(--brand)}
+  .opts button.sel-yes{background:var(--yes);border-color:var(--yes-b);color:var(--yes-b)}
+  .opts button.sel-no{background:var(--no);border-color:var(--no-b);color:var(--no-b)}
+  .opts button.sel-mask{background:var(--mask);border-color:var(--mask-b);color:var(--mask-b)}
+  .opts button.sel-other{background:#eaf1f9;border-color:var(--brand);color:var(--brand-d)}
+  .rec{font-size:12px;color:var(--sub);margin-left:6px}
+  .rec b{color:var(--brand)}
+
+  /* field matrix */
+  table.fields{width:100%;border-collapse:collapse;background:var(--card);
+    border-radius:12px;overflow:hidden;font-size:13px;border:1px solid var(--line)}
+  table.fields th,table.fields td{border:1px solid var(--line);padding:8px 10px;vertical-align:top}
+  table.fields th{background:#eef2f7;font-size:12.5px;text-align:left}
+  table.fields .doc{background:#f3f6fa;font-weight:800;color:var(--brand-d)}
+  table.fields .fname{font-weight:700;white-space:nowrap}
+  table.fields .scn{font-size:11.5px;color:#a23b3b}
+  .chip{display:inline-block;border-radius:6px;padding:3px 8px;font-size:11.5px;font-weight:700;cursor:pointer;border:1.5px solid var(--line);background:#fafbfc;color:var(--sub);margin:2px 3px 2px 0}
+  .chip.on-up{background:var(--yes);border-color:var(--yes-b);color:var(--yes-b)}
+  .chip.on-mask{background:var(--mask);border-color:var(--mask-b);color:var(--mask-b)}
+  .chip.on-no{background:var(--no);border-color:var(--no-b);color:var(--no-b)}
+  .mini{font-size:11.5px;color:var(--sub);margin-top:4px}
+
+  /* storage */
+  .branch{background:#f8fafc;border:1px dashed var(--brand);border-radius:10px;
+    padding:10px 14px;margin-top:8px;font-size:13px;display:none}
+  .branch.show{display:block}
+
+  /* result */
+  .result-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+  .result-box h3{margin:0 0 10px;font-size:16px;color:var(--brand-d)}
+  .sum-table{width:100%;border-collapse:collapse;font-size:13px}
+  .sum-table th,.sum-table td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+  .sum-table th{background:#eef2f7}
+  .pill{display:inline-block;border-radius:20px;padding:2px 10px;font-size:11.5px;font-weight:700}
+  .pill.yes{background:var(--yes);color:var(--yes-b)}
+  .pill.no{background:var(--no);color:var(--no-b)}
+  .pill.mask{background:var(--mask);color:var(--mask-b)}
+  .pill.other{background:#eaf1f9;color:var(--brand-d)}
+  pre.code{background:var(--code);color:#e6edf3;border-radius:10px;padding:14px 16px;
+    overflow:auto;font-size:12.5px;font-family:"Consolas","SFMono-Regular",monospace;line-height:1.55}
+  .code-head{display:flex;justify-content:space-between;align-items:center;margin:14px 0 4px}
+  .code-head h4{margin:0;font-size:13.5px;color:var(--ink)}
+  .copybtn{border:1px solid var(--brand);background:#fff;color:var(--brand);border-radius:7px;
+    padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700}
+  .copybtn:active{background:var(--brand);color:#fff}
+
+  .nav{display:flex;justify-content:space-between;margin-top:20px;gap:10px}
+  .nav button{border:none;border-radius:10px;padding:11px 22px;cursor:pointer;font-size:14px;font-weight:700}
+  .nav .prev{background:#e9edf3;color:var(--sub)}
+  .nav .next{background:var(--brand);color:#fff}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .toolbar button{border:1px solid var(--line);background:var(--card);border-radius:9px;
+    padding:8px 14px;cursor:pointer;font-size:13px;font-weight:700;color:var(--sub)}
+  .toolbar button:hover{border-color:var(--brand);color:var(--brand)}
+  footer{margin-top:30px;font-size:12px;color:var(--sub);text-align:center}
+  @media print{.steps,.nav,.toolbar,.firm{display:none!important}.panel{visibility:visible!important;height:auto!important;overflow:visible!important}header.app{background:var(--brand)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <h1>AIセキュリティポリシー判定ツール</h1>
+    <p>税理士事務所向け ─ Claude Code / 生成AIに「どの情報をどこまで預けるか」をYES/NOで決め、ストレージ構成と設定まで導きます。</p>
+    <div class="firm">
+      <label>事務所名</label>
+      <input id="firmName" placeholder="（例）〇〇税理士法人　御中" />
+      <label>作成日</label>
+      <input id="madeDate" style="max-width:140px" />
+    </div>
+  </header>
+
+  <div class="steps" id="stepsNav"></div>
+
+  <!-- STEP 0: イントロ -->
+  <section class="panel" data-step="0">
+    <div class="lead">
+      <h2>はじめに ─ このツールの考え方</h2>
+      <p>「方針メモ」で終わらせず、<b>決めたら設定に落とせる判定表</b>です。YES/NOを選ぶと、末尾の「結果」タブにポリシー一覧・ストレージ推奨・Claude Codeの設定例（settings.json）が自動で組み上がります。</p>
+      <div class="callout">
+        <b>最重要の前提：</b>テレメトリ（利用統計）は停止できますが、<b>AIへの入力（会話・読ませたファイル本文）は処理のためAnthropicのAPIに送信されます</b>。これは仕様です。だからこそ「<b>何を読ませるか／何のフィールドを上げるか</b>」のポリシーが要になります。
+      </div>
+      <p style="font-size:13px;color:var(--sub)">※ モデル学習への利用は、Team / Enterprise プランでは原則使用されません（最終的な可否はadmin設定・契約条件で要確認）。テレメトリ停止は別物で、本ツールで設定します。</p>
+    </div>
+    <div class="lead">
+      <h2>進め方（4ステップ）</h2>
+      <p><b>STEP1 ポリシー判定</b>：事故シナリオを見ながら、12+のポリシーをYES/NOで決める</p>
+      <p><b>STEP2 フィールド粒度</b>：請求書・通帳などを「項目（フィールド）」に分解し、<b>上げる／マスクして上げる／上げない（隔離）</b>を選ぶ</p>
+      <p><b>STEP3 ストレージ判定</b>：クラウド（Google Drive / OneDrive / Dropbox 等）の選択、ローカル＋gitとGitHubの使い方を決める</p>
+      <p><b>STEP4 結果</b>：採用ポリシー・運用ルール・推奨構成・settings.jsonを出力（印刷・コピー可）</p>
+    </div>
+    <div class="nav"><span></span><button class="next" onclick="go(1)">STEP1 へ進む ▶</button></div>
+  </section>
+
+  <!-- STEP 1: ポリシー -->
+  <section class="panel" data-step="1">
+    <div class="lead"><h2>STEP1 ポリシー判定</h2>
+      <p>各問いに「事故シナリオ」を添えています。<b>YES＝そのポリシーを採用（制限する／設定する）</b>。迷ったら<b>畠山推奨</b>のままでOK。</p>
+    </div>
+    <div id="policyArea"></div>
+    <div class="nav"><button class="prev" onclick="go(0)">◀ 戻る</button><button class="next" onclick="go(2)">STEP2 へ ▶</button></div>
+  </section>
+
+  <!-- STEP 2: フィールド粒度 -->
+  <section class="panel" data-step="2">
+    <div class="lead"><h2>STEP2 フィールド粒度の判定</h2>
+      <p>書類を「項目（フィールド）」に分解し、Anthropicのサーバーに<b>上げる／マスクして上げる／上げない（隔離）</b>を選びます。例：請求書の「口座情報」は上げない、「取引先名」はマスク、など。</p>
+      <div class="callout"><b>3つの処分：</b>
+        <span class="pill yes">上げる</span> そのまま読ませてよい ／
+        <span class="pill mask">マスク</span> 加工・仮名化した版のみ読ませる ／
+        <span class="pill no">上げない</span> 隔離フォルダに退避しClaudeから物理的に除外
+      </div>
+    </div>
+    <div id="fieldArea"></div>
+    <div class="nav"><button class="prev" onclick="go(1)">◀ 戻る</button><button class="next" onclick="go(3)">STEP3 へ ▶</button></div>
+  </section>
+
+  <!-- STEP 3: ストレージ -->
+  <section class="panel" data-step="3">
+    <div class="lead"><h2>STEP3 ストレージ判定</h2>
+      <p>STEP1〜2で決めた「上げない情報」は、<b>そもそもどこに保管するか</b>まで決めないと守れません。クラウド可否とローカル／GitHubの使い方を選びます。</p>
+      <div class="callout"><b>前提：</b>Claude Code は「ローカルのファイル」を前提に動きます。クラウド直下（Drive / OneDrive 同期フォルダ）での起動はフリーズ・git破損の報告があり非推奨。<b>作業実体はローカル、クラウドは保管・共有レイヤー</b>が基本です。</div>
+    </div>
+
+    <div class="lead" style="border-color:var(--brand)">
+      <h2>解説 ─ なぜ「ローカル作業＋GitHub」なのか（Drive・Boxだけでは足りない理由）</h2>
+      <p style="font-size:13px;color:var(--sub)">非エンジニアの感覚だと「データはGoogle DriveやBoxに入れておけば、共有もバックアップもできる。これで十分では？」と思いがちです。でも<b>AIに仕事をさせる前提</b>だと、Drive・Boxだけでは届かない部分があります。鍵は「3つのレイヤーは役割が違う」こと。</p>
+
+      <table class="sum-table"><tr><th style="width:130px">レイヤー</th><th style="width:150px">役割</th><th>なぜ必要か</th></tr>
+        <tr><td><b>ローカル</b>（PC内）</td><td>AIの作業場</td><td>Claude Code はローカルファイルを直接読み書きして動く設計。速くて安定。</td></tr>
+        <tr><td><b>Drive / Box</b></td><td>データの保管・共有</td><td>顧客資料・成果物を全スタッフで共有し、バックアップする。</td></tr>
+        <tr><td><b>GitHub</b></td><td>仕組みの共有・履歴</td><td>CLAUDE.md・skills・スクリプト＝事務所のルールを全PC・全員に配り、改善を同期する。</td></tr>
+      </table>
+
+      <p style="margin:14px 0 4px;font-weight:800;color:var(--brand-d)">■ なぜローカルで作業するのか</p>
+      <p style="font-size:13.5px">Claude Code は「ローカルのファイル」を直接読み書きしながら動きます。Drive・Boxの<b>同期フォルダ直下で動かすと、AIの高速な読み書きに同期が追いつかず、フリーズ・mkdirエラー・git破損</b>が起きます（実報告多数）。だから作業実体はローカルに置き、Drive・Boxは「保管・共有」に徹するのが安定運用です。</p>
+
+      <p style="margin:14px 0 4px;font-weight:800;color:var(--no-b)">■ なぜDrive・Boxだけでは足りないのか（AI運用の観点）</p>
+      <table class="sum-table"><tr><th style="width:170px">Drive・Boxの限界</th><th>中身</th></tr>
+        <tr><td>版管理が世代バックアップ止まり</td><td>AIが1回の作業で「何を・なぜ変えたか」を論理的なまとまりで追えない。「この変更だけ取り消す」ができない。</td></tr>
+        <tr><td>大量変更に弱い</td><td>AIは一度に大量のファイルを書き換える。Drive・Boxはこれを「同期の嵐・コンフリクトコピー乱立」として扱い、どれが正本か分からなくなる。</td></tr>
+        <tr><td>検証・巻き戻しができない</td><td>AI運用の肝は「AIがやったことを後から検証し、まずければ戻す」。これにはgitの履歴（誰が・いつ・何を・なぜ）が要る。Driveの版履歴では代替できない。</td></tr>
+      </table>
+
+      <p style="margin:14px 0 4px;font-weight:800;color:var(--yes-b)">■ なぜ、さらにGitHubなのか</p>
+      <table class="sum-table"><tr><th style="width:170px">GitHubで得られること</th><th>中身</th></tr>
+        <tr><td>仕組みを全PC・全員で同期</td><td>CLAUDE.md・skills・スクリプトを、自宅PC・事務所PC・スタッフ全員で常に最新に揃えられる。</td></tr>
+        <tr><td>属人化を解く</td><td>「誰がいつルールを変えたか」が残る。改善を一人が直せば全員に配れる。</td></tr>
+        <tr><td>データと仕組みを分けて守る</td><td>顧客データはDrive、仕組みはGitHub。置き場を分けることで、データを公開リスクにさらさず「仕組みの共有」だけを得られる。</td></tr>
+      </table>
+
+      <p style="margin:14px 0 4px;font-weight:800;color:var(--no-b)">■ 「仕組みなら、Driveの共有フォルダに置けば配れるのでは？」への答え</p>
+      <p style="font-size:13px;color:var(--sub)">CLAUDE.md・skills・スクリプトも結局はただのファイル。だったらDriveの共有フォルダに入れて全員に配ればいい、と思うのが自然です。でも「<b>全PCで同じく動く仕組みを配り、改善し続ける</b>」目的だと、Driveの同期では次の点で届きません。</p>
+      <table class="sum-table"><tr><th style="width:170px">Driveで仕組みを配る限界</th><th>中身</th></tr>
+        <tr><td>置き場所が合わない</td><td>仕組みファイルは各PCの決まった場所（<code>~/.claude/</code> や プロジェクトの <code>.claude/</code>）に無いとClaudeが読まない。Driveは「Driveフォルダ」に同期するだけで、実際に使う場所には届かない。結局、手でコピーする手間が残る。gitは clone / pull で使う場所に直接配れる。</td></tr>
+        <tr><td>同時編集で壊れる</td><td>2人が同じCLAUDE.mdを直すと、Driveは後勝ち上書きか「コンフリクトコピー」を量産し、どれが正本か分からなくなる。gitは2人の変更を行単位で統合できる。</td></tr>
+        <tr><td>確認せず全員に伝染する</td><td>Driveは保存した瞬間に全員へ即同期。誰かのうっかりや実験中のルールが、レビューなしで全PCへ一気に広がる。gitなら「プルリクで一度確認してから反映」が仕組みで挟める。</td></tr>
+        <tr><td>一部だけ戻せない</td><td>スクリプト更新で不具合が出ても、Driveは世代を丸ごと戻すしかなく、巻き添えで他の改善まで消える。gitは「その変更だけ」取り消せる。</td></tr>
+        <tr><td>半端な状態が混ざる</td><td>仕組みは複数ファイルが揃って初めて正しく動く。Driveは1ファイルずつ同期するので、PCによって「新CLAUDE.md＋旧skill」のちぐはぐが起きる。gitは一式をまとめて反映するので、全PCが常に整合する。</td></tr>
+      </table>
+      <div class="callout" style="background:var(--no);border-color:var(--no-b)">
+        要は、<b>「データの共有」はDriveで十分</b>でも、<b>「全PCで同じく動く仕組みの配布・改善」はDriveの同期では担えない</b>。同じ「共有」でも、データの保管と仕組みの配布は求められる仕事が違う。だからこそ、仕組みだけはGitHubに置く意味がある。
+      </div>
+
+      <div class="callout">
+        <b>まとめ：</b>ローカル＝速くて安全な作業場、Drive・Box＝データの保管・共有、GitHub＝仕組みの共有と履歴。<b>役割が違うから、「Drive・Boxに入れるだけ」では作業の安定性とAIの検証可能性は手に入りません。</b>「データはいつものフォルダ（Drive・Box）、AIの作業はローカル、仕組みだけGitHub」と覚えれば、非エンジニアでも線引きを間違えにくくなります。
+      </div>
+    </div>
+
+    <div class="lead" style="border-color:var(--brand)">
+      <h2>解説 ─ ローカルの成果物をDriveの「正本」にする手順</h2>
+      <p style="font-size:13px;color:var(--sub)">「ローカルで作業、Driveで共有」と決めても、<b>完成したファイルをどうDriveに上げれば正本（オリジナル）が崩れないか</b>でつまずきがちです。大原則はひとつ ─ <b>正本はDrive、ローカルは作業中の写し</b>。逆にすると二重管理でどれが最新か分からなくなります。</p>
+
+      <p style="margin:14px 0 6px;font-weight:800;color:var(--brand-d)">■ フォルダ構造のイメージ（3つのレイヤーは同じ並びで揃える）</p>
+      <p style="font-size:13px;color:var(--sub)">ローカルもDriveも<b>「顧問先 ＞ 会社 ＞ 年度」の形を揃える</b>のがコツ。違うのは中身だけ ─ ローカルは作業中・全部入り、Driveは完成版（正本）だけ。</p>
+
+      <div style="font-weight:700;font-size:13px;color:var(--ink);margin:10px 0 4px">① ローカル（PC内＝AIの作業場）</div>
+      <pre style="background:#f3f6fa;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:Consolas,monospace;font-size:12px;overflow:auto;line-height:1.55;color:var(--ink);margin:0">C:\AI-Office\                ← Claudeはこの中で起動（Drive同期フォルダの外）
+├─ CLAUDE.md                 ← 事務所のルール本体（GitHubと同期）
+├─ .claude\skills\           ← スキル・スクリプト（GitHubと同期）
+├─ 顧問先\
+│   ├─ A社\
+│   │   ├─ 2026年3月期\
+│   │   │   ├─ 試算表.xlsx           ← 作業中の写し
+│   │   │   └─ 申告書ドラフト.pdf     ← 作業中の写し
+│   │   └─ _機密_除外\            ← マイナンバー等／Claudeから遮断
+│   └─ B社\ …
+└─ .git\                     ← 変更履歴（顧客データは入れない）</pre>
+
+      <div style="font-weight:700;font-size:13px;color:var(--ink);margin:14px 0 4px">② Drive（クラウド＝正本・共有）</div>
+      <pre style="background:#eef6f0;border:1px solid var(--yes-b);border-radius:8px;padding:10px 12px;font-family:Consolas,monospace;font-size:12px;overflow:auto;line-height:1.55;color:var(--ink);margin:0">マイドライブ\事務所共有\
+└─ 顧問先\
+    ├─ A社\
+    │   └─ 2026年3月期\
+    │       ├─ 試算表.xlsx                      ← 正本（完成版だけ）
+    │       └─ 申告済み_申告書一式_R7_A社.pdf   ← 正本
+    └─ B社\ …
+（マイナンバー等の最高機密は、原則ここにも置かない）</pre>
+
+      <div style="font-weight:700;font-size:13px;color:var(--ink);margin:14px 0 4px">③ GitHub（仕組みだけ・private）</div>
+      <pre style="background:#fff8ec;border:1px solid var(--mask-b);border-radius:8px;padding:10px 12px;font-family:Consolas,monospace;font-size:12px;overflow:auto;line-height:1.55;color:var(--ink);margin:0">事務所/ai-office （private）
+├─ CLAUDE.md
+├─ .claude/skills/
+└─ scripts/
+（顧客データは .gitignore で除外 → そもそも載らない）</pre>
+
+      <p style="margin:16px 0 6px;font-weight:800;color:var(--brand-d)">■ ローカル → Drive へ上げる3つのやり方（事務所規模で選ぶ）</p>
+      <table class="sum-table"><tr><th style="width:160px">やり方</th><th>中身</th><th style="width:120px">向き</th></tr>
+        <tr><td><b>A. 手動アップ</b><br>（最小・一番安全）</td><td>完成版だけをDriveのブラウザ画面にドラッグして上げる。作業フォルダとDrive同期フォルダは別に置く。</td><td>0〜数人。設定不要</td></tr>
+        <tr><td><b>B. 同期フォルダ分離</b></td><td>Drive Desktopは入れるが、Claudeの作業フォルダは同期対象の外に置く。完成したら作業フォルダ→同期フォルダに<b>コピー</b>して反映（Claudeは同期フォルダの中で動かさない）。</td><td>共有が多い中規模</td></tr>
+        <tr><td><b>C. Claude／APIで直接アップ</b><br>（おすすめ）</td><td>同期に頼らず、Claude Codeから完成ファイルをDrive APIで直接上げる。<b>同期フォルダ問題（フリーズ・コンフリクト）を根本回避</b>。「完成→指定フォルダへアップ→記録」まで定型化できる。</td><td>自動化したい人</td></tr>
+      </table>
+
+      <p style="margin:16px 0 6px;font-weight:800;color:var(--brand-d)">■ 正本を崩さない4つのルール（どのやり方でも共通）</p>
+      <table class="sum-table"><tr><th style="width:200px">ルール</th><th>なぜ</th></tr>
+        <tr><td>命名を固定する</td><td>例 <code>申告済み_申告書一式_R7_A社.pdf</code>。別名コピーの乱立を防ぐ。</td></tr>
+        <tr><td>上書きは「同名で上げる」</td><td>Drive側がバージョン履歴で旧版を持ってくれる。<code>_最新2</code> のような別名を作らない。</td></tr>
+        <tr><td>完成したらローカル作業版は消すか <code>_作業中</code> を付ける</td><td>「Driveが正本」と一目で分かる状態に。どっちが本物か迷わない。</td></tr>
+        <tr><td>ローカルとDriveでフォルダの形を揃える</td><td>同じ「顧問先＞会社＞年度」。迷子・取り違えを防ぐ。</td></tr>
+      </table>
+
+      <div class="callout" style="background:var(--yes);border-color:var(--yes-b)">
+        <b>覚え方：</b>「<b>Driveに上がった版が正本、ローカルは作業中の写し</b>」。完成したものだけをDriveに上げ、同名で上書きする。これだけで「どれが最新か分からない」事故はほぼ消えます。
+      </div>
+    </div>
+
+    <div id="storageArea"></div>
+
+    <div class="lead" style="border-color:var(--brand)">
+      <h2>フォルダ構造の設計</h2>
+      <p style="font-size:13px;color:var(--sub)">事務所のフォルダの並べ方を決めます。ここでの選択に合わせて、<b>STEP4「結果」の『あなたの構成』フォルダ図が自動で組み上がります</b>。畠山事務所の実運用（番号プレフィックス・分類記号・決算期フォルダ）を初期値にしています。</p>
+    </div>
+    <div id="folderArea"></div>
+
+    <div class="lead" style="border-color:var(--brand)">
+      <h2>マークダウン（ルール文書）の保管・更新ルール</h2>
+      <p style="font-size:13px;color:var(--sub)">CLAUDE.md などの<b>ルール文書（マークダウン）を「誰が・どこで・どう更新するか」</b>を決めます。ここを決めて初めて、全PC・全スタッフが<b>同じルールで動くAI</b>になります。選択は<b>STEP4「結果」⑥</b>に保管・更新マップとして反映されます。</p>
+    </div>
+    <div id="mdArea"></div>
+
+    <div class="lead" style="border-color:var(--brand)">
+      <h2>解説 ─ GitHubに「顧客データごと」載せる運用について</h2>
+      <div class="callout" style="background:var(--yes);border-color:var(--yes-b)">
+        <b>先に結論。</b>GitHubは<b>使います</b>。ただし載せるのは<b>仕組み（CLAUDE.md・skills・スクリプト）だけ</b>。<b>顧客の実データ（決算・申告・個人情報）は載せません</b>。<br>
+        このセクションで「勧めない」と言っているのは、世の中で見かける<b>「顧客データごとGitHubに入れる運用」</b>のこと。GitHubそのものを否定しているわけではありません。
+      </div>
+      <p style="font-size:13px;color:var(--sub)">なぜ「顧客データごと」の運用が存在するのか（メリット）、それでも勧めない理由、そして<b>非エンジニアの税理士が使う上でのハードル</b>を整理します。</p>
+
+      <p style="margin:14px 0 4px;font-weight:800;color:var(--yes-b)">■ なぜ「顧客データごと」載せる運用が存在するのか（メリット）</p>
+      <table class="sum-table"><tr><th style="width:150px">メリット</th><th>中身</th></tr>
+        <tr><td>バージョン管理</td><td>誰がいつ何を変えたかを全て記録し、任意の時点に巻き戻せる。</td></tr>
+        <tr><td>複数人での共有</td><td>同じデータを全スタッフが常に最新で参照し、変更を取り込み合える。</td></tr>
+        <tr><td>バックアップ</td><td>履歴ごとクラウドに保全。PCが壊れても失わない。</td></tr>
+        <tr><td>変更レビュー</td><td>プルリクエストで「公開・反映の前に一度チェック」が仕組みで回る。</td></tr>
+        <tr><td>監査証跡</td><td>変更履歴がそのまま「誰が触ったか」の証跡になる。</td></tr>
+      </table>
+      <div class="callout" style="background:var(--yes);border-color:var(--yes-b)">
+        ただし、これらのメリットは<b>「仕組み（CLAUDE.md・skills・スクリプト）」だけをGitHubに置けば得られます</b>。顧客の実データ（決算・申告・個人情報）まで載せる必要はありません。データの共有はGoogle Drive等、バックアップはDrive/NASで代替できます。<b>つまり、メリットを取るのにデータごと載せる理由がない。</b>
+      </div>
+
+      <p style="margin:14px 0 4px;font-weight:800;color:var(--no-b)">■ それでも「顧客データごと」は勧めない理由</p>
+      <table class="sum-table"><tr><th style="width:150px">リスク</th><th>中身</th></tr>
+        <tr><td>公開事故</td><td>publicリポジトリの誤設定・.gitignore漏れで、顧客の決算書やマイナンバーが全世界に公開された事例は実在。<b>一度公開＝検索・キャッシュに残り、取り消せない。</b></td></tr>
+        <tr><td>第三者への預託</td><td>GitHub（Microsoft）のサーバーに顧客データを預けることになる。守秘義務・個人情報の第三者提供の整理が別途必要。</td></tr>
+        <tr><td>消去が困難</td><td>gitは「履歴を残す」のが本質。一度commitした機密は、履歴を書き換えない限り過去版に残り続ける。</td></tr>
+      </table>
+
+      <p style="margin:14px 0 4px;font-weight:800;color:var(--mask-b)">■ 非エンジニアの税理士にとってのハードル</p>
+      <table class="sum-table"><tr><th style="width:150px">ハードル</th><th>中身</th></tr>
+        <tr><td>概念の壁</td><td>commit / push / pull / branch / conflict / .gitignore など、日常業務にない概念を覚える必要がある。</td></tr>
+        <tr><td>誤操作リスク</td><td>「何を載せて何を載せないか」の線引き（.gitignore）を<b>一度でも間違えると漏洩に直結</b>。専門外の人ほど起きやすい。</td></tr>
+        <tr><td>継続コスト</td><td>コンフリクト解消・履歴管理でつまずいた時、事務所内に聞ける人がいないと業務が止まる。</td></tr>
+      </table>
+
+      <div class="callout">
+        <b>結論：</b>GitHubは<b>使う。ただし「仕組み（CLAUDE.md・skills・スクリプト）の共有」だけ</b>。顧客の実データは載せない。データの共有はDrive、バックアップはDrive/NAS。これなら非エンジニアでも<b>「データはいつものフォルダ、仕組みだけGitHub」</b>と役割が明確で、事故りにくい。上のハードル（概念・誤操作・継続コスト）も、<b>git操作自体をClaude Codeに任せれば</b>コマンドを覚える必要はほぼなく、越えられます。
+      </div>
+    </div>
+
+    <div class="nav"><button class="prev" onclick="go(2)">◀ 戻る</button><button class="next" onclick="go(4)">結果を生成 ▶</button></div>
+  </section>
+
+  <!-- STEP 4: 結果 -->
+  <section class="panel" data-step="4">
+    <div class="lead"><h2>STEP4 判定結果</h2>
+      <p>下記が現在の回答に基づく結論です。回答を変えると即座に反映されます。</p>
+    </div>
+    <div class="toolbar">
+      <button onclick="window.print()">🖨 印刷 / PDF保存</button>
+      <button onclick="resetAll()">↺ 回答をリセット</button>
+    </div>
+    <div id="resultArea"></div>
+    <div class="nav"><button class="prev" onclick="go(3)">◀ 戻る</button><span></span></div>
+  </section>
+
+  <footer>
+    畠山謙人税理士事務所 ─ AIセキュリティポリシー判定ひな形 ／ 回答はこのブラウザ内（localStorage）にのみ保存され、外部送信されません。
+  </footer>
+</div>
+
+<script>
+/* ============ データ定義 ============ */
+const GROUPS = {
+  A:"A. 読み取り範囲（機密情報の保護）",
+  B:"B. 外部へのデータ送信",
+  C:"C. 実行権限（破壊的操作の防止）",
+  D:"D. データ保持・プライバシー",
+  E:"E. 組織全体への強制（全スタッフ）",
+  F:"F. 監査・自動ブロック（任意）",
+  G:"G. 端末（PC紛失・盗難対策）"
+};
+
+// type:"yn" → 既定 yes/no。type:"choice" → choices配列
+const POLICIES = [
+  {id:"a1",g:"A",q:".env / *.key / *.pem / credentials 等の認証情報ファイルをAIに読ませない",
+   scen:"freeeやe-Tax・銀行のAPIキー・パスワードを書いたメモを作業フォルダに置いたまま、Claudeがフォルダを読み込み → 出力やログにキーが露出して流出。",
+   rec:"yes", note:"最優先。permissions.deny の Read ルールで遮断。"},
+  {id:"a2",q:"AIのアクセス範囲を「起動フォルダ＋明示的に許可したフォルダ」のみに限定する",g:"A",
+   scen:"A社の作業中にClaudeがB社・C社の顧問先フォルダまで横断的に読み、A社向けの試算表コメントに別の顧客の数字が紛れ込む。",
+   rec:"yes", note:"1顧問先＝1作業フォルダで起動。additionalDirectories で明示追加のみ。"},
+  {id:"a3",q:"顧客フォルダ外（個人デスクトップ・Documents・他ドライブ）の読み取りを禁止する",g:"A",
+   scen:"スタッフ個人のデスクトップに置いた私的ファイルや別案件の資料を、フォルダ一括処理のついでにClaudeが読み込む。",
+   rec:"yes", note:"作業に不要な個人領域・他案件を遮断。"},
+  {id:"a4",q:"極秘書類（マイナンバー・通帳・身分証コピー等）を専用フォルダに隔離しAIから除外する",g:"A",
+   scen:"マイナンバー記載の扶養控除等申告書が証憑フォルダに紛れ込み、562件のOCR一括処理に巻き込まれてAIに送信される。",
+   rec:"yes", note:"『読ませない物理境界』を作るのが最も確実。STEP2と連動。"},
+
+  {id:"b1",q:"Web検索（WebSearch）を許可する（顧客名・固有情報を検索語に入れない運用とセット）",g:"B",
+   scen:"「〇〇株式会社 役員報酬 妥当性」と顧客の実名で検索 → 顧客名が検索クエリとして外部に出る。",
+   rec:"yes", note:"税制・通達リサーチに有用。NO にすると検索自体を禁止。"},
+  {id:"b2",q:"外部URL取得（WebFetch）を、許可ドメインのみに限定する",g:"B",
+   scen:"プロンプトに紛れた不審なURLをClaudeが取得しに行き、意図しない外部サイトと通信する。",
+   rec:"yes", note:"nta.go.jp / *.freee.co.jp 等のホワイトリスト運用。"},
+  {id:"b3",q:"利用するMCPサーバーを、承認したものだけに限定する（freee / Google Drive 等）",g:"B",
+   scen:"スタッフが見つけた未承認の外部MCPを接続 → そのMCP経由で顧客データが第三者サーバーへ送信される。",
+   rec:"yes", note:"社内で使うMCPを棚卸ししてから設定。"},
+  {id:"b4",q:"Anthropicへの匿名利用統計（テレメトリ）・エラーレポート送信を停止する",g:"B",
+   scen:"エラーレポートに処理中のファイルパスやデータ断片が含まれ、自動送信される懸念をゼロにしたい。",
+   rec:"yes", note:"※会話・ファイル本文の送信とは別物。利用統計のみ停止。"},
+
+  {id:"c1",q:"ネットワーク取得コマンド（curl / wget）をBashで禁止する",g:"C",
+   scen:"コマンド経由で顧客データを外部ストレージにアップロードされる抜け道を塞ぎたい。",
+   rec:"yes", note:"外部送信は WebFetch（許可ドメイン）に一本化。"},
+  {id:"c2",q:"ファイル削除など破壊的コマンド（rm 等）を禁止または毎回確認にする",g:"C",
+   scen:"「整理して」の指示でClaudeが顧問先フォルダごと rm → 決算データ・証憑が消失。",
+   rec:"ask", type:"choice",
+   choices:[{v:"ask",l:"毎回確認(ask)"},{v:"deny",l:"完全禁止(deny)"},{v:"no",l:"制限しない"}],
+   note:"誤操作によるデータ消失を防止。"},
+  {id:"c3",q:"デフォルトの認可モードをどうするか",g:"C",
+   scen:"導入初期から全自動にすると、挙動を把握しないまま顧客データへの操作が走る。",
+   rec:"default", type:"choice",
+   choices:[{v:"default",l:"毎回確認(default)"},{v:"acceptEdits",l:"編集自動(acceptEdits)"},{v:"plan",l:"読取提案のみ(plan)"}],
+   note:"最初は毎回確認 → 安全な範囲がわかったら acceptEdits で効率化。"},
+  {id:"c4",q:"確認を全スキップする bypassPermissions モードを禁止する",g:"C",
+   scen:"スタッフが『全部スキップ』モードで運用 → 機密フォルダの読込も削除も歯止めなしで走る。",
+   rec:"yes", note:"組織として封じる（managed で強制）。"},
+
+  {id:"d1",q:"会話をモデル学習に使わないプラン・設定で運用する",g:"D",
+   scen:"無料/個人プランのまま顧客の決算データを投入し、学習利用の懸念が残る。",
+   rec:"yes", note:"Team / Enterprise で担保。admin設定・契約で最終確認。"},
+  {id:"d2",q:"ローカルの会話履歴（session）の保持期間を定め、自動削除する",g:"D",
+   scen:"退職者のPC・故障した中古PCのローカル履歴に、顧客情報を含む会話が残り続ける。",
+   rec:"yes", note:"cleanupPeriodDays（例:90日）。値は適用前に動作検証（要確認キー）。"},
+
+  {id:"e1",q:"上記ポリシーを全スタッフに強制し、個人が緩められないようにする",g:"E",
+   scen:"一部スタッフが自分のsettingsでdenyを外し、機密フォルダを読ませてしまう。",
+   rec:"yes", note:"重要項目は managed-settings.json で強制（個人上書き不可）。"},
+  {id:"e2",q:"設定ファイルの配布・更新の管理担当と手順を決める",g:"E",
+   scen:"設定が端末ごとにバラバラで、誰も最新版を把握していない。事故時に原因を追えない。",
+   rec:"yes", note:"管理者1名＋手順書。変更履歴を社内チャット等で共有。"},
+  {id:"e3",q:"CLAUDE.md（事務所のルール本体）を、所長・幹部だけが変更でき、作業メンバーは書き換えられないようにする",g:"E",
+   scen:"作業メンバーがClaude Codeに『このルール邪魔だから消して』と頼み、事務所共通のルール（禁止事項・出力先・税務判断の線引き）が勝手に書き換わる。気づかないまま全員に広がる。",
+   rec:"yes", note:"通常、ルールの変更権限は所長・幹部のみ。作業メンバーのPCではCLAUDE.mdの書き換えを禁止（managedで強制）し、更新は所長がGitHub経由で配る。"},
+
+  {id:"f1",q:"機密ファイルアクセスや危険コマンドをフックで自動ブロックする（任意・上級）",g:"F",
+   scen:"deny だけでは拾えないパターンを、PreToolUse フックで実行前に止めたい。",
+   rec:"no", note:"deny等で足りる場合は不要。より厳格にしたい時のオプション。"},
+  {id:"f2",q:"ファイル編集・操作のログを記録して監査できるようにする（任意）",g:"F",
+   scen:"『誰がいつどの顧客ファイルをAIで触ったか』を後から追跡できるようにしたい。",
+   rec:"no", note:"PostToolUse フックで非同期ログ出力。必要に応じて。"},
+
+  {id:"g1",q:"全PCのディスクを暗号化する（Windows:BitLocker / Mac:FileVault）",g:"G",
+   scen:"スタッフが顧客データ入りのノートPCを電車に置き忘れ。暗号化していないとディスクを抜き出して中身を直接読まれる。",
+   rec:"yes", note:"盗まれても『箱』が開かない状態に。ローカル作業を選ぶなら大前提の設定。"},
+  {id:"g2",q:"ログインパスワード（または生体認証）＋画面の自動ロックを必須にする",g:"G",
+   scen:"離席中の開きっぱなしPCから、第三者が顧客フォルダやClaudeの会話履歴をのぞき見る。",
+   rec:"yes", note:"数分で自動ロック。カフェ・コワーキング等の共用スペース作業では特に重要。"},
+  {id:"g3",q:"紛失時にリモートでPCを探す・データを消せる仕組みを用意する",g:"G",
+   scen:"PC紛失。手元から消す手段がなく、顧客データが入ったまま行方不明になる。",
+   rec:"yes", note:"Windows『デバイスの検索』／Microsoft Intune／Apple『探す』等を事前に有効化。"},
+  {id:"g4",q:"完成した成果物はDriveを正本とし、ローカルの作業版は溜め込まず最小限にする",g:"G",
+   scen:"何年分もの顧客データがローカルに残り続け、1台の紛失・盗難で大量流出につながる。",
+   rec:"yes", note:"紛失時の被害を『作業中の写しだけ』に抑える。正本はDriveにあるので復旧も可能。STEP3の正本運用と連動。"}
+];
+
+// フィールド粒度。disp: up / mask / no
+const DOCS = [
+  {doc:"請求書・領収書", fields:[
+    {f:"取引先の名前", def:"mask", scen:"取引先名で『誰と取引しているか』が外部に渡る懸念。競合・M&A関連先だと特に機微。", mask:"イニシャル/取引先IDに置換。仕訳の主目的なら『上げる』も可。"},
+    {f:"金額", def:"up", scen:"単独では会社特定性は低い。仕訳・OCRの主対象。", mask:"原則そのまま。"},
+    {f:"請求の内容（品目）", def:"up", scen:"通常は問題なし。ただし開発中の製品名・コードネーム等は機微。", mask:"機微な品目名のみ一般名詞化。"},
+    {f:"取引先の口座情報", def:"no", scen:"口座番号・支店名が露出。振込先改ざん・なりすまし請求の標的に。", mask:"OCR対象から除外、または口座欄をマスクした加工版のみ読ませる。"},
+    {f:"取引先の住所・連絡先", def:"mask", scen:"個人事業主宛だと個人情報。", mask:"住所は読ませない。必要なら市区まで。"}
+  ]},
+  {doc:"決算書・試算表", fields:[
+    {f:"会社名", def:"mask", scen:"財務数値と会社名が結びつくと特定性が上がる。", mask:"クライアントID/イニシャルに置換すると安全。"},
+    {f:"財務数値（売上・利益等）", def:"up", scen:"作業の主対象。会社名と切り離せば特定性は低い。", mask:"原則そのまま。"}
+  ]},
+  {doc:"申告書（法人税）─ 本表・会社概要（別表一／概況説明書）", fields:[
+    {f:"法人名・法人番号", def:"mask", scen:"法人番号は公開情報だが、税額・所得と紐付くと特定性が上がる。", mask:"イニシャル/クライアントIDに置換。"},
+    {f:"本店所在地・納税地", def:"mask", scen:"公開情報だが、出力に不要なら伏せる。自宅兼事務所だと個人住所に直結。", mask:"市区まで／伏せる。"},
+    {f:"代表者氏名", def:"mask", scen:"役員報酬・株主情報と結びつくと機微。", mask:"イニシャル化。"},
+    {f:"代表者の自宅住所", def:"no", scen:"別表一・概況説明書に記載される個人の住所。高機微で流出時の被害大。", mask:"読ませない。必要なら都道府県まで。"},
+    {f:"事業種目・主要取引先・取引金融機関（概況説明書）", def:"mask", scen:"主要取引先・メインバンク・月別売上が一覧で露出。取引関係・与信が外部に渡る。", mask:"取引先名・銀行名は伏せる。集計値のみ。"},
+    {f:"従業員数・代表者報酬（概況説明書）", def:"mask", scen:"代表者の報酬額が氏名と結びつく。", mask:"氏名と切り離して集計のみ。"},
+    {f:"所得金額・税額", def:"up", scen:"チェックリスト作成等で活用。会社名と切り離せば特定性は低い。", mask:"会社名マスクとセットで上げる。"}
+  ]},
+  {doc:"申告書（法人税）─ 別表二（同族会社等の判定）", fields:[
+    {f:"株主の氏名", def:"no", scen:"株主＝個人の実名。同族判定で家族・親族関係まで読み取れる。第三者の個人情報。", mask:"読ませない／株主A・Bに匿名化。"},
+    {f:"株主の住所", def:"no", scen:"株主個人の住所。高機微。", mask:"読ませない／隔離。"},
+    {f:"持株数・出資金額・持株割合", def:"mask", scen:"資本構成・支配関係が露出。M&A・事業承継の機微情報。", mask:"氏名と切り離し、割合のみ。"},
+    {f:"同族関係（株主間の続柄）", def:"mask", scen:"親族関係＝家族構成の開示。", mask:"判定区分（同族/非同族）のみ。"}
+  ]},
+  {doc:"申告書（法人税）─ 別表・勘定科目内訳明細書", fields:[
+    {f:"取引先別 売掛金・買掛金・未払金", def:"mask", scen:"『誰にいくら』の取引先別残高が一覧で露出。取引関係・与信が外部に渡る。", mask:"取引先名は伏せ、金額・件数のみ。"},
+    {f:"借入金の借入先・利率（内訳書）", def:"mask", scen:"金融機関・代表者からの借入が露出。資金繰りの機微。", mask:"借入先名を伏せる。"},
+    {f:"預貯金の金融機関・口座番号（内訳書）", def:"no", scen:"口座番号・支店名が露出。なりすまし・改ざんの標的。", mask:"口座番号をマスク。原本は隔離。"},
+    {f:"役員・従業員への貸付金/借入金（内訳書）", def:"mask", scen:"個人名＋金額。役員借入・貸付は機微。", mask:"氏名を伏せ、区分・金額のみ。"},
+    {f:"地代家賃の支払先・物件所在地（内訳書）", def:"mask", scen:"賃貸人（個人の場合あり）・物件住所が露出。", mask:"支払先・住所を伏せる。"},
+    {f:"役員報酬・人件費の内訳", def:"mask", scen:"役員・従業員ごとの報酬額。社内でも閲覧制限対象。", mask:"氏名を伏せ、総額のみ。"},
+    {f:"受取利息・配当の支払者（別表六）", def:"mask", scen:"取引金融機関・出資先が露出。", mask:"支払者名を伏せる。"}
+  ]},
+  {doc:"申告書（所得税・個人）", fields:[
+    {f:"納税者氏名", def:"mask", scen:"個人の所得・家族構成・財産と氏名が結びつく。", mask:"イニシャル化。"},
+    {f:"マイナンバー（個人番号）", def:"no", scen:"確定申告書・本人確認書類に記載。番号法上の最厳格管理対象。AI投入は原則禁止。", mask:"隔離フォルダへ。マスク版も作らず原本を物理隔離。"},
+    {f:"住所", def:"no", scen:"個人の住所は高機微。出力に書き出すと流出時の被害大。", mask:"読ませない。必要なら都道府県まで。"},
+    {f:"還付金の振込口座", def:"no", scen:"本人の口座番号が露出。", mask:"読ませない／隔離。"},
+    {f:"所得金額（給与・事業・不動産等）", def:"up", scen:"氏名・住所と切り離せば作業に使える。", mask:"氏名マスクとセットで上げる。"},
+    {f:"扶養親族情報", def:"mask", scen:"家族の氏名・続柄・所得・障害区分。第三者かつセンシティブ。", mask:"人数・区分のみ。氏名は読ませない。"},
+    {f:"医療費控除・保険の内訳", def:"mask", scen:"通院先・病名が推測できる健康情報を含みうる。", mask:"金額合計のみ。明細・支払先は伏せる。"},
+    {f:"事業所得の取引先（青色決算書）", def:"mask", scen:"取引先別の売上・経費が露出。", mask:"取引先名を伏せ、金額のみ。"}
+  ]},
+  {doc:"給与明細・源泉・年末調整", fields:[
+    {f:"従業員氏名", def:"mask", scen:"給与額と氏名の結合は高機微。社内でも閲覧制限対象。", mask:"社員番号/イニシャルに置換。"},
+    {f:"給与・賞与額", def:"up", scen:"集計・チェックには必要。氏名と切り離せば可。", mask:"氏名マスクとセット。"},
+    {f:"マイナンバー", def:"no", scen:"番号法上、最も厳格な管理対象。AI投入は原則禁止。", mask:"隔離フォルダへ。マスク版すら作らない（原本を物理隔離）。"},
+    {f:"扶養・社会保険情報", def:"mask", scen:"家族情報・健康情報を含みうる。", mask:"区分・人数のみ。"},
+    {f:"振込口座", def:"no", scen:"従業員の口座番号露出。", mask:"読ませない/隔離。"}
+  ]},
+  {doc:"通帳・口座情報", fields:[
+    {f:"口座番号", def:"no", scen:"振込先改ざん・なりすましの標的。最高機密。", mask:"隔離。番号をマスクした加工版のみ。"},
+    {f:"残高・入出金明細", def:"mask", scen:"取引相手・生活実態まで露出。", mask:"摘要・相手先を伏せた金額・日付のみの加工CSV。"},
+    {f:"名義人", def:"no", scen:"個人名義だと個人情報。", mask:"読ませない/隔離。"}
+  ]},
+  {doc:"マイナンバー関連書類", fields:[
+    {f:"マイナンバー", def:"no", scen:"番号法・安全管理措置の対象。漏洩は行政処分・損害賠償リスク。", mask:"専用『_機密_除外』フォルダへ隔離。Read deny で遮断。"},
+    {f:"本人確認書類画像（免許証等）", def:"no", scen:"顔写真・番号・住所が一括露出。", mask:"隔離フォルダで除外。"}
+  ]},
+  {doc:"契約書", fields:[
+    {f:"取引条件・金額", def:"up", scen:"内容確認・レビューには有用。", mask:"原則そのまま。"},
+    {f:"署名・押印・印影", def:"mask", scen:"印影の流出は偽造リスク。", mask:"署名欄をマスクした版で。"},
+    {f:"第三者の個人情報", def:"mask", scen:"相手方役員・個人の住所氏名を含む契約。", mask:"必要部分のみ。氏名・住所は伏せる。"}
+  ]},
+  {doc:"登記簿謄本（履歴事項証明）", fields:[
+    {f:"役員氏名", def:"up", scen:"公開情報が中心。", mask:"通常はそのまま可。"},
+    {f:"役員住所", def:"mask", scen:"公開情報だが個人住所。出力に不要なら伏せる。", mask:"市区まで/伏せる。"}
+  ]},
+  {doc:"社内メール・チャット履歴", fields:[
+    {f:"個人名", def:"mask", scen:"スタッフ・顧客担当者の実名。", mask:"役職/イニシャルに置換。"},
+    {f:"センシティブな相談内容", def:"mask", scen:"人事・トラブル・健康など。フォルダ一括読込は危険。", mask:"必要部分のみ貼り付け。一括読込はしない。"}
+  ]}
+];
+
+// STEP3 ストレージ質問
+// クラウドを使う場合の共通注意（どのストレージを選んでも同じ）
+const _S1_CLOUD = "<b>クラウドを使う場合の必須ルール：</b><br>① マイナンバー・通帳・本人確認書類など『上げない』と決めた最高機密は、原則クラウドにも載せない（載せる場合は権限を絞った専用領域＋暗号化）。<br>② 共有範囲を『閲覧/編集』で最小化。全員フルアクセスは不可。<br>③ <b>クラウド同期フォルダ直下でClaude Codeを起動しない</b>（フリーズ・git破損の報告）。作業はローカルへ取り込んでから。";
+
+const STORAGE = [
+  {id:"s1", q:"顧問先の資料保管にどのクラウドストレージを使うか？",
+   rec:"gdrive", type:"choice",
+   choices:[{v:"gdrive",l:"Google Drive"},{v:"onedrive",l:"OneDrive"},{v:"dropbox",l:"Dropbox"},{v:"other",l:"その他のクラウド"},{v:"no",l:"使わない（ローカル/NASのみ）"}],
+   branch:{
+     gdrive:_S1_CLOUD, onedrive:_S1_CLOUD, dropbox:_S1_CLOUD, other:_S1_CLOUD,
+     no:"NAS/ローカルのみ運用。バックアップ（オフサイト/暗号化）の確保が課題。複数スタッフ共有はアクセス権限設計が必須。"
+   }},
+  {id:"s2", q:"Claude Code の作業データはローカル（PC内）に置くか？",
+   rec:"yes", type:"choice",
+   choices:[{v:"yes",l:"ローカルに置く（推奨）"},{v:"no",l:"クラウド直下で動かす"}],
+   branch:{
+     yes:"推奨。作業実体＝ローカル、クラウド＝保管・共有のハイブリッドが安定。1顧問先＝1フォルダで起動。",
+     no:"<b>非推奨。</b>Google Drive/OneDrive同期フォルダ直下はフリーズ・mkdir(EEXIST)エラー・git破損の報告多数。どうしても使うならCLI限定＋同期除外設定が必要。"
+   }},
+  {id:"s3", q:"作業フォルダをバージョン管理（git）するか？",
+   rec:"yes", type:"choice",
+   choices:[{v:"yes",l:"gitを使う"},{v:"no",l:"使わない"}],
+   branch:{
+     yes:"<b>「いつ・何を変えたか」が自動で記録され、まずければ前の状態に戻せる</b>仕組み。AIの作業を後から確認したり、おかしくなったら巻き戻せるので事故に強い。<br>ひとつだけ注意：<b>顧客の決算書や個人情報そのものは、この記録には入れない</b>。入れてしまうとGitHubに共有した時に漏れる原因になる。「何を記録して何を外すか」の線引きはClaude Codeに任せればよく、こちらで専門用語を覚える必要はありません。",
+     no:"うっかり消した・直したときに、前の状態へ戻す手段が手薄になる。別の方法でこまめにバックアップを取る運用が必要。"
+   }},
+  {id:"s4", q:"git のリモートを GitHub に置くか？",
+   rec:"code-only", type:"choice",
+   choices:[{v:"code-only",l:"コード・ルールのみ（推奨）"},{v:"all",l:"顧客データ含め全部"},{v:"no",l:"GitHubは使わない（ローカルgitのみ）"}],
+   branch:{
+     "code-only":"<b>推奨。</b>CLAUDE.md・skills・スクリプト等の『仕組み』だけを GitHub（プライベート）で共有し、顧客実データは .gitignore で除外。属人化を解きつつ漏洩リスクを断つ。",
+     "all":"<b>強く非推奨。</b>誤って public 化・.gitignore 漏れがあると顧客の決算・個人情報がそのまま流出。どうしても必要なら自社管理リモート＋暗号化＋監査前提。",
+     "no":"ローカルgitのみで履歴管理。共有はしないが、PC故障時に履歴ごと失う。オフサイトバックアップを別途確保。"
+   }}
+];
+
+// STEP3 フォルダ構造の設計（回答で下のSTEP4のツリーが変わる）
+// text:テキスト入力 / choice:選択。defで初期値
+const FOLDER = [
+  {id:"fp_top", type:"choice", def:"number",
+   q:"トップ階層をどう分けるか？",
+   choices:[{v:"number",l:"番号プレフィックス（00_master / 30_顧問先 …）"},{v:"plain",l:"名前だけ（master / 顧問先 …）"}],
+   note:"番号を振ると並び順が固定され、AIにも人にも場所が安定。畠山事務所は番号式。"},
+  {id:"fp_prefix", type:"choice", def:"yes",
+   q:"顧問先フォルダに分類プレフィックスを付けるか？",
+   choices:[{v:"yes",l:"付ける（例：[税] A社）"},{v:"no",l:"付けない（例：A社）"}],
+   note:"業務別に並べ替え・絞り込みしやすい。畠山事務所は [税]/[AI]/[セ] で運用。"},
+  {id:"fp_period", type:"choice", def:"kessan",
+   q:"顧問先の下を年度・期で分けるか？",
+   choices:[{v:"kessan",l:"決算期ごと（例：2603＝R26/3期）"},{v:"year",l:"暦年ごと（例：2026）"},{v:"none",l:"分けない"}],
+   note:"申告は決算期単位。和暦2桁＋月の決算期フォルダが探しやすい。"},
+  {id:"fp_sub", type:"choice", def:"yes",
+   q:"顧問先（年度）の下に標準サブフォルダを用意するか？",
+   choices:[{v:"yes",l:"用意する（証憑／決算書／申告書）"},{v:"no",l:"作らない（直置き）"}],
+   note:"どの顧問先も同じ並びになり、迷子が出ない。"},
+  {id:"fp_root", type:"text", def:"C:\\AI-Office",
+   q:"作業ルート（ローカルでClaudeを起動するフォルダ）",
+   note:"Drive同期フォルダの外に置く。1事務所＝1ルート。"},
+  {id:"fp_iso", type:"text", def:"_機密_除外",
+   q:"機密隔離フォルダの名前",
+   note:"マイナンバー・通帳等をここへ。settings の Read deny で遮断。"}
+];
+
+// STEP3 マークダウン（ルール文書）の運用設計
+const MD = [
+  {id:"md_global", type:"choice", def:"github",
+   q:"事務所共通ルール（CLAUDE.md）をどう全PCに配るか？",
+   choices:[{v:"github",l:"リポジトリのCLAUDE.md＋GitHubで配布（推奨）"},{v:"managed",l:"組織強制（全PCに固定・上書き不可）"},{v:"user",l:"各自が手動でコピー"}],
+   note:"GitHub配布なら所長が直す→各PCがpullで最新化でき、属人化が消える。上書きを物理的に禁じたいなら組織強制。"},
+  {id:"md_client", type:"choice", def:"yes",
+   q:"顧問先ごとに専用ルール（顧問先別CLAUDE.md）を持たせるか？",
+   choices:[{v:"yes",l:"持たせる（例：30_顧問先\\[税] A社\\CLAUDE.md）"},{v:"no",l:"共通ルールだけにする"}],
+   note:"その顧問先固有の科目・担当・注意点をそのフォルダのCLAUDE.mdに。Claudeはそのフォルダで作業した時に自動で読む（遅延ロード）。"}
+];
+
+/* ============ 状態管理 ============ */
+const STORE_KEY = "ai_sec_policy_v1";
+let state = load();
+function load(){ try{return JSON.parse(localStorage.getItem(STORE_KEY))||{}}catch(e){return {}} }
+function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+function ans(id){ return state.ans?.[id]; }
+function setAns(id,v){ state.ans=state.ans||{}; state.ans[id]=v; save(); }
+function fieldKey(d,f){ return "F:"+d+"|"+f; }
+
+function ensureDefaults(){
+  state.ans = state.ans || {};
+  POLICIES.forEach(p=>{ if(state.ans[p.id]==null) state.ans[p.id]=p.rec; });
+  DOCS.forEach(d=>d.fields.forEach(f=>{ const k=fieldKey(d.doc,f.f); if(state.ans[k]==null) state.ans[k]=f.def; }));
+  STORAGE.forEach(s=>{ if(state.ans[s.id]==null) state.ans[s.id]=s.rec; });
+  FOLDER.forEach(f=>{ if(state.ans[f.id]==null) state.ans[f.id]=f.def; });
+  MD.forEach(f=>{ if(state.ans[f.id]==null) state.ans[f.id]=f.def; });
+  if(state.firm==null) state.firm="";
+  if(state.date==null) state.date = todayStr();
+  save();
+}
+function todayStr(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+
+// 選んだクラウドストレージの表示名・ルートフォルダを返す
+function useCloud(){ return ans("s1")!=="no"; }
+function storageName(){
+  return {gdrive:"Google Drive", onedrive:"OneDrive", dropbox:"Dropbox", other:"クラウドストレージ"}[ans("s1")] || "クラウドストレージ";
+}
+function storageRoot(){
+  return ({gdrive:"マイドライブ\\事務所共有\\", onedrive:"OneDrive\\事務所共有\\", dropbox:"Dropbox\\事務所共有\\", other:"クラウド\\事務所共有\\"})[ans("s1")] || "クラウド\\事務所共有\\";
+}
+
+/* ============ レンダリング ============ */
+const STEP_LABELS=["はじめに","STEP1 ポリシー","STEP2 フィールド","STEP3 ストレージ","STEP4 結果"];
+let cur=0;
+function renderSteps(){
+  const nav=document.getElementById("stepsNav"); nav.innerHTML="";
+  STEP_LABELS.forEach((lbl,i)=>{
+    const b=document.createElement("button");
+    b.className=(i===cur?"active":"")+(i<cur?" done":"");
+    b.innerHTML='<span class="n">'+(i)+'</span>'+lbl;
+    b.onclick=()=>go(i);
+    nav.appendChild(b);
+  });
+}
+function go(i){
+  cur=i; renderSteps();
+  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active", +p.dataset.step===i));
+  if(i===4) renderResult();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function optBtn(label,sel,cls,onclick){
+  const b=document.createElement("button");
+  b.textContent=label; if(sel) b.classList.add(cls); b.onclick=onclick;
+  return b;
+}
+
+function renderPolicies(){
+  const area=document.getElementById("policyArea"); area.innerHTML="";
+  let lastG=null;
+  POLICIES.forEach(p=>{
+    if(p.g!==lastG){ lastG=p.g; const h=document.createElement("div"); h.className="group-title"; h.textContent=GROUPS[p.g]; area.appendChild(h); }
+    const card=document.createElement("div"); card.className="card";
+    card.innerHTML='<div class="q">'+p.q+'</div><div class="scen"><b>想定事故：</b>'+p.scen+'</div>';
+    const opts=document.createElement("div"); opts.className="opts";
+    const choices = p.type==="choice" ? p.choices : [{v:"yes",l:"YES（採用）"},{v:"no",l:"NO（しない）"}];
+    choices.forEach(c=>{
+      const sel = ans(p.id)===c.v;
+      let cls="sel-other";
+      if(c.v==="yes") cls="sel-yes"; else if(c.v==="no") cls="sel-no";
+      const b=optBtn(c.l, sel, cls, ()=>{ setAns(p.id,c.v); renderPolicies(); });
+      opts.appendChild(b);
+    });
+    card.appendChild(opts);
+    const recLabel = labelOf(p, p.rec);
+    const note=document.createElement("div"); note.className="note";
+    note.innerHTML='<span class="rec">畠山推奨：<b>'+recLabel+'</b></span>　'+ (p.note||"");
+    card.appendChild(note);
+    area.appendChild(card);
+  });
+}
+function labelOf(p,v){
+  if(p.type==="choice"){ const c=p.choices.find(x=>x.v===v); return c?c.l:v; }
+  return v==="yes"?"YES":(v==="no"?"NO":v);
+}
+
+function renderFields(){
+  const area=document.getElementById("fieldArea"); area.innerHTML="";
+  DOCS.forEach(d=>{
+    const tbl=document.createElement("table"); tbl.className="fields";
+    tbl.innerHTML='<tr><td class="doc" colspan="3">'+d.doc+'</td></tr>'+
+      '<tr><th style="width:170px">項目（フィールド）</th><th>処分の選択</th><th style="width:38%">想定事故・マスク方法</th></tr>';
+    d.fields.forEach(f=>{
+      const k=fieldKey(d.doc,f.f);
+      const tr=document.createElement("tr");
+      const tdName=document.createElement("td"); tdName.className="fname"; tdName.textContent=f.f;
+      const tdOpt=document.createElement("td");
+      [["up","上げる","on-up"],["mask","マスク","on-mask"],["no","上げない","on-no"]].forEach(([v,l,cls])=>{
+        const sp=document.createElement("span"); sp.className="chip"+(ans(k)===v?" "+cls:"");
+        sp.textContent=l; sp.onclick=()=>{ setAns(k,v); renderFields(); };
+        tdOpt.appendChild(sp);
+      });
+      const mini=document.createElement("div"); mini.className="mini"; mini.innerHTML="推奨：<b>"+dispLabel(f.def)+"</b>";
+      tdOpt.appendChild(mini);
+      const tdScn=document.createElement("td"); tdScn.innerHTML='<span class="scn">'+f.scen+'</span><div class="mini">▶ '+f.mask+'</div>';
+      tr.appendChild(tdName); tr.appendChild(tdOpt); tr.appendChild(tdScn);
+      tbl.appendChild(tr);
+    });
+    area.appendChild(tbl);
+    area.appendChild(document.createElement("div")).style.height="12px";
+  });
+}
+function dispLabel(v){ return v==="up"?"上げる":(v==="mask"?"マスク":"上げない（隔離）"); }
+
+function renderStorage(){
+  const area=document.getElementById("storageArea"); area.innerHTML="";
+  STORAGE.forEach(s=>{
+    const card=document.createElement("div"); card.className="card";
+    card.innerHTML='<div class="q">'+s.q+'</div>';
+    const opts=document.createElement("div"); opts.className="opts";
+    s.choices.forEach(c=>{
+      const sel=ans(s.id)===c.v;
+      let cls="sel-other"; if(c.v==="yes")cls="sel-yes"; else if(c.v==="no")cls="sel-no";
+      opts.appendChild(optBtn(c.l, sel, cls, ()=>{ setAns(s.id,c.v); renderStorage(); }));
+    });
+    card.appendChild(opts);
+    const br=document.createElement("div"); br.className="branch show";
+    br.innerHTML=s.branch[ans(s.id)]||"";
+    card.appendChild(br);
+    const note=document.createElement("div"); note.className="note";
+    note.innerHTML='<span class="rec">畠山推奨：<b>'+(s.choices.find(c=>c.v===s.rec)||{}).l+'</b></span>';
+    card.appendChild(note);
+    area.appendChild(card);
+  });
+}
+
+// 選択／テキスト混在の設定配列を描画（FOLDER・MD 共用）
+function renderConfigArray(arr, areaId, self){
+  const area=document.getElementById(areaId); if(!area) return; area.innerHTML="";
+  arr.forEach(f=>{
+    const card=document.createElement("div"); card.className="card";
+    card.innerHTML='<div class="q">'+f.q+'</div>';
+    if(f.type==="text"){
+      const inp=document.createElement("input");
+      inp.type="text"; inp.value=ans(f.id)||"";
+      inp.style.cssText="width:100%;padding:8px 11px;border:1.5px solid var(--line);border-radius:9px;font-size:13.5px;font-family:Consolas,monospace";
+      inp.oninput=e=>{ setAns(f.id, e.target.value); };
+      card.appendChild(inp);
+      const note=document.createElement("div"); note.className="note"; note.textContent=f.note||"";
+      card.appendChild(note);
+    }else{
+      const opts=document.createElement("div"); opts.className="opts";
+      f.choices.forEach(c=>{
+        const sel=ans(f.id)===c.v;
+        opts.appendChild(optBtn(c.l, sel, "sel-other", ()=>{ setAns(f.id,c.v); self(); }));
+      });
+      card.appendChild(opts);
+      const note=document.createElement("div"); note.className="note";
+      const recC=f.choices.find(c=>c.v===f.def);
+      note.innerHTML='<span class="rec">畠山推奨：<b>'+(recC?recC.l:f.def)+'</b></span>　'+(f.note||"");
+      card.appendChild(note);
+    }
+    area.appendChild(card);
+  });
+}
+function renderFolderConfig(){ renderConfigArray(FOLDER,"folderArea",renderFolderConfig); }
+function renderMdConfig(){ renderConfigArray(MD,"mdArea",renderMdConfig); }
+
+/* ============ 結果生成 ============ */
+function renderResult(){
+  const area=document.getElementById("resultArea"); area.innerHTML="";
+  const firm=document.getElementById("firmName").value||"（事務所名未入力）";
+  const date=document.getElementById("madeDate").value||state.date;
+
+  // 1. ポリシー要約
+  let pol='<div class="result-box"><h3>① 採用ポリシー一覧</h3><table class="sum-table"><tr><th>区分</th><th>ポリシー</th><th>判定</th></tr>';
+  POLICIES.forEach(p=>{
+    const v=ans(p.id); const lbl=labelOf(p,v);
+    let pc="other"; if(v==="yes")pc="yes"; else if(v==="no")pc="no";
+    pol+='<tr><td>'+p.g+'</td><td>'+p.q+'</td><td><span class="pill '+pc+'">'+lbl+'</span></td></tr>';
+  });
+  pol+='</table></div>';
+  area.innerHTML+=pol;
+
+  // 2. フィールド運用ルール（上げない/マスクのみ抽出）
+  let fr='<div class="result-box"><h3>② フィールド運用ルール（上げない・マスク対象）</h3>';
+  let no=[],mask=[];
+  DOCS.forEach(d=>d.fields.forEach(f=>{ const v=ans(fieldKey(d.doc,f.f));
+    if(v==="no") no.push(d.doc+" / "+f.f+" … "+f.mask);
+    else if(v==="mask") mask.push(d.doc+" / "+f.f+" … "+f.mask); }));
+  fr+='<p><b style="color:var(--no-b)">■ 上げない（隔離）</b>'+(no.length?'<ul><li>'+no.join("</li><li>")+'</li></ul>':'<br>なし');
+  fr+='<p><b style="color:var(--mask-b)">■ マスクして上げる</b>'+(mask.length?'<ul><li>'+mask.join("</li><li>")+'</li></ul>':'<br>なし')+'</p>';
+  fr+='<div class="callout">上記「上げない」項目は、<b>_機密_除外</b> フォルダへ物理隔離し、settings の Read deny で遮断します（③・④に反映済み）。</div></div>';
+  area.innerHTML+=fr;
+
+  // 3. ストレージ推奨構成
+  let st='<div class="result-box"><h3>③ 推奨ストレージ構成</h3><table class="sum-table"><tr><th>問い</th><th>選択</th></tr>';
+  STORAGE.forEach(s=>{ st+='<tr><td>'+s.q+'</td><td><span class="pill other">'+(s.choices.find(c=>c.v===ans(s.id))||{}).l+'</span></td></tr>'; });
+  st+='</table>'+storageVerdict()+genFolderTree()+'</div>';
+  area.innerHTML+=st;
+
+  // 4. 端末（PC紛失・盗難）対策
+  area.innerHTML+=genDeviceSecurity();
+
+  // 5. settings.json 生成
+  area.innerHTML+=genSettingsHTML(firm,date);
+
+  // 6. マークダウン（ルール文書）の保管・更新ルール
+  area.innerHTML+=genMarkdownPolicy();
+
+  bindCopy();
+}
+
+function treeBox(title,bg,border,body){
+  return '<div style="font-weight:700;font-size:13px;color:var(--ink);margin:14px 0 4px">'+title+'</div>'+
+    '<pre style="background:'+bg+';border:1px solid '+border+';border-radius:8px;padding:10px 12px;font-family:Consolas,monospace;font-size:12px;overflow:auto;line-height:1.55;color:var(--ink);margin:0">'+escapeHtml(body)+'</pre>';
+}
+// ネスト構造（{label,note,children}）をASCIIツリーに描画
+function renderTree(nodes, pre){
+  pre = pre||""; let out=[];
+  nodes.forEach((n,i)=>{
+    const last = i===nodes.length-1;
+    out.push(pre+(last?"└─ ":"├─ ")+n.label+(n.note?"   ← "+n.note:""));
+    if(n.children && n.children.length) out.push(...renderTree(n.children, pre+(last?"    ":"│   ")));
+  });
+  return out;
+}
+function genFolderTree(){
+  const useDrive = useCloud();
+  const localWork = ans("s2")==="yes";
+  const useGit = ans("s3")==="yes";
+  const gh = ans("s4");
+  const lockMd = ans("e3")==="yes";
+  const ghSkills = (gh==="code-only"||gh==="all");
+
+  // フォルダ構造の設計（STEP3）
+  const root = (ans("fp_root")||"C:\\AI-Office").replace(/\\+$/,"");
+  const topNum = ans("fp_top")==="number";
+  const usePrefix = ans("fp_prefix")==="yes";
+  const period = ans("fp_period");        // kessan / year / none
+  const useSub = ans("fp_sub")==="yes";
+  const isoName = (ans("fp_iso")||"_機密_除外").replace(/\\+$/,"");
+
+  const topClient = topNum ? "30_顧問先" : "顧問先";
+  const clientDisp = usePrefix ? "[税] A社" : "A社";
+  const periodFolder = period==="kessan" ? "2603" : (period==="year" ? "2026" : null);
+  const periodNote = period==="kessan" ? "2026年3月期（西暦2桁＋月）" : (period==="year" ? "暦年" : "");
+
+  // STEP2で「上げない（隔離）」にした項目を収集
+  let iso=[];
+  DOCS.forEach(d=>d.fields.forEach(f=>{ if(ans(fieldKey(d.doc,f.f))==="no") iso.push(f.f); }));
+  iso=[...new Set(iso)];
+  const hasIso = ans("a4")==="yes" || iso.length>0;
+  const isoShown = iso.slice(0,5);
+  function isoNode(){
+    let ch = isoShown.length ? isoShown.map(f=>({label:f}))
+      : [{label:"（マイナンバー・通帳・本人確認書類 等）"}];
+    if(iso.length>5) ch.push({label:"…ほか"+(iso.length-5)+"項目"});
+    return {label:isoName+"\\", note:"Claudeから遮断（Read deny）", children:ch};
+  }
+
+  // 作業中の写し（ローカル）／正本（Drive）の中身
+  function workItems(forDrive){
+    if(useSub){
+      return [
+        {label:"証憑\\"},
+        {label:"決算書\\", children:[ forDrive
+          ? {label:"決算書_A社_2026年3月期.pdf", note:"正本"}
+          : {label:"試算表.xlsx", note:"作業中の写し"} ]},
+        {label:"申告書\\", children:[ forDrive
+          ? {label:"申告済み_申告書一式_令和8年3月期_A社.pdf", note:"正本"}
+          : {label:"申告書ドラフト.pdf", note:"作業中の写し"} ]}
+      ];
+    }
+    return forDrive
+      ? [{label:"試算表.xlsx", note:"正本（完成版だけ）"},
+         {label:"申告済み_申告書一式_令和8年3月期_A社.pdf", note:"正本"}]
+      : [{label:"試算表.xlsx", note:"作業中の写し"},
+         {label:"申告書ドラフト.pdf", note:"作業中の写し"}];
+  }
+  // 顧問先ノード（period有無・隔離有無を反映）。forDriveなら隔離は付けない
+  function clientNode(forDrive){
+    let ch=[];
+    if(periodFolder) ch.push({label:periodFolder+"\\", note:periodNote, children:workItems(forDrive)});
+    else ch.push(...workItems(forDrive));
+    if(!forDrive && hasIso) ch.push(isoNode());
+    return {label:clientDisp+"\\", children:ch};
+  }
+
+  /* ① ローカル */
+  let localChildren=[
+    {label:"CLAUDE.md", note:"事務所のルール本体"+(lockMd?"／メンバーは書換禁止":"")+(ghSkills?"（GitHubと同期）":"")},
+    {label:".claude\\skills\\", note:"スキル・スクリプト"+(ghSkills?"（GitHubと同期）":"（ローカルのみ）")},
+    {label:topClient+"\\", children:[clientNode(false)]}
+  ];
+  if(useGit) localChildren.push({label:".git\\", note:"変更履歴（顧客データは入れない）"});
+  let L=[ root+"\\   ← Claudeはこの中で起動"+(useDrive?"（"+storageName()+"同期フォルダの外）":"") ].concat(renderTree(localChildren));
+  if(!localWork) L.unshift("⚠ 注意：クラウド直下での起動を選択中（フリーズ・git破損リスク）。\n");
+  let tLocal = treeBox("① ローカル（PC内＝AIの作業場）","#f3f6fa","var(--line)", L.join("\n"));
+
+  /* ② クラウドストレージ */
+  let tDrive;
+  if(useDrive){
+    let D=[ storageRoot() ]
+      .concat(renderTree([ {label:topClient+"\\", children:[clientNode(true)]} ]));
+    D.push("（マイナンバー等の最高機密は、原則ここにも置かない）");
+    tDrive = treeBox("② "+storageName()+"（クラウド＝正本・共有）","#eef6f0","var(--yes-b)", D.join("\n"));
+  }else{
+    tDrive = treeBox("② クラウド ─ 使わない設定","#fdecec","var(--no-b)",
+      "クラウドは使用しない（NAS／ローカルのみ）。\nオフサイトのバックアップ（暗号化）を別途確保すること。");
+  }
+
+  /* ③ GitHub */
+  let tGit;
+  if(gh==="code-only"){
+    tGit = treeBox("③ GitHub（仕組みだけ・private）","#fff8ec","var(--mask-b)",
+      "事務所/ai-office （private）\n├─ CLAUDE.md\n├─ .claude/skills/\n└─ scripts/\n（顧客データは .gitignore で除外 → そもそも載らない）");
+  }else if(gh==="all"){
+    tGit = treeBox("③ GitHub ─ 顧客データ含め全部（非推奨）","#fdecec","var(--no-b)",
+      "事務所/ai-office\n├─ CLAUDE.md / skills / scripts\n└─ "+topClient+"\\"+clientDisp+"\\…（顧客の決算・個人情報も載る）\n⚠ public誤設定・.gitignore漏れで即漏洩。コードのみ運用への変更を強く推奨。");
+  }else{
+    tGit = treeBox("③ GitHub ─ 使わない設定","#f3f6fa","var(--line)",
+      "GitHubは使用しない（"+(useGit?"ローカルgitのみで履歴管理":"履歴管理なし")+"）。\n共有はされず、PC故障時のために別バックアップが必要。");
+  }
+
+  return '<div style="margin-top:16px"><h4 style="margin:0 0 4px;font-size:14px;color:var(--brand-d)">▼ あなたの回答に基づくフォルダ構成（STEP3の設計を反映）</h4>'+
+    '<p style="font-size:12.5px;color:var(--sub);margin:0 0 6px">「顧問先＞会社＞年度」の形を3レイヤーで揃え、ローカルは作業中・全部入り、'+(useDrive?storageName():"クラウド")+'は完成版（正本）だけ。STEP3の「フォルダ構造の設計」や各回答を変えると下の図も変わります。</p>'+
+    tLocal+tDrive+tGit+'</div>';
+}
+
+function storageVerdict(){
+  const s2=ans("s2"),s4=ans("s4");
+  let lines=[];
+  lines.push("<b>レイヤー構成（ハイブリッド推奨）</b>");
+  lines.push("• ローカル（作業レイヤー）：Claude Code はここで起動。"+(ans("s3")==="yes"?"git でバージョン管理。":"")+"1顧問先＝1フォルダ。極秘は _機密_除外 へ隔離。");
+  if(useCloud()) lines.push("• "+storageName()+"（保管・共有レイヤー）：顧問先資料・成果物・共通ルールの保管に使用。最高機密フィールドは載せない／権限を絞った専用領域のみ。同期フォルダ直下では起動しない。");
+  else lines.push("• クラウド：使用しない。NAS/ローカルでオフサイトバックアップを別途確保。");
+  if(s4==="code-only") lines.push("• GitHub（仕組み共有レイヤー）：CLAUDE.md・skills・スクリプトのみ。顧客実データは .gitignore で除外。");
+  else if(s4==="all") lines.push("• GitHub：顧客データ含め全部 ─ <b style='color:var(--no-b)'>非推奨。public誤設定・.gitignore漏れで即漏洩。再検討を強く推奨。</b>");
+  else lines.push("• GitHub：使用しない（ローカルgitのみ）。");
+  if(s2==="no") lines.push("<b style='color:var(--no-b)'>⚠ クラウド直下での起動を選択中：フリーズ・git破損リスク。ローカル運用への変更を推奨。</b>");
+  return '<div class="callout">'+lines.join("<br>")+'</div>';
+}
+
+function genDeviceSecurity(){
+  const localWork = ans("s2")==="yes";
+  const useDrive = useCloud();
+  const g1=ans("g1"),g2=ans("g2"),g3=ans("g3"),g4=ans("g4");
+
+  // ローカル作業推奨 → PC紛失というトレードオフを設計で吸収する考え方
+  let head='<div class="callout"><b>なぜ端末対策がセットで要るか</b><br>'+
+    'AIにローカルで作業させると速くて安全（クラウド直下の起動事故が避けられる）反面、<b>顧客データの写しがPCの中に残る</b>。'+
+    'PCを紛失・盗難されたときに開かれる、というリスクがローカル運用の弱点。<br>'+
+    'これを設計で抑えるのが下の考え方：<br>'+
+    '<b>① 正本は'+(useDrive?storageName():"クラウド")+'に置く</b>'+(useDrive? '（採用済み）':'（※今クラウド不使用。NAS等のオフサイト保管を別途用意）')+
+    ' → PCの中身は「作業中の写し」だけになり、<b>紛失＝データ消失ではなく"のぞき見"だけが問題</b>に絞れる。<br>'+
+    '<b>② のぞき見を防ぐ</b> → ディスク暗号化・自動ロック・リモート消去。'+
+    '<b>③ そもそも溜め込まない</b> → 終わった写しはローカルから消す。';
+  if(!localWork) head+='<br><b style="color:var(--no-b)">⚠ 現在クラウド直下での起動を選択中。まずローカル作業へ寄せ、その上で下の端末対策を。</b>';
+  head+='</div>';
+
+  // 採用状況テーブル
+  const rows=[
+    ["ディスク暗号化（BitLocker / FileVault）", g1, "紛失PCの中身を読めなくする最後の砦。未設定だと盗まれた瞬間に全データが読める。"],
+    ["ログイン＋画面の自動ロック", g2, "離席・置き忘れの一次防御。生体認証＋数分でロックを必須に。"],
+    ["リモートで探す・消す（Find My / Intune 等）", g3, "紛失時に遠隔でロック・初期化。台数が増える事務所ほど効く。"],
+    ["ローカルの写しは溜め込まず最小限", g4, "正本＝"+(useDrive?storageName():"クラウド/NAS")+"。終わった写しは消す。漏れても痛手が小さい状態を保つ。"]
+  ];
+  let tbl='<table class="sum-table"><tr><th>対策</th><th>判定</th><th>なぜ</th></tr>';
+  rows.forEach(r=>{
+    const v=r[1]; let pc="other",lbl="未回答";
+    if(v==="yes"){pc="yes";lbl="採用";} else if(v==="no"){pc="no";lbl="見送り";}
+    tbl+='<tr><td>'+r[0]+'</td><td><span class="pill '+pc+'">'+lbl+'</span></td><td style="font-size:12px;color:var(--sub)">'+r[2]+'</td></tr>';
+  });
+  tbl+='</table>';
+
+  // 見送りがある場合の注意
+  const skipped=rows.filter(r=>r[1]!=="yes").map(r=>r[0]);
+  let warn="";
+  if(skipped.length) warn='<div class="callout" style="background:var(--warn);border-color:var(--warn-b)">未採用：<b>'+skipped.join("／")+'</b>。ローカル作業を推奨する以上、最低でも<b>暗号化＋自動ロック</b>は揃えることを強く推奨します。</div>';
+
+  // 各対策の具体手順（見送り＝noのものは出さない）
+  const procName=useDrive?storageName():"クラウド/NAS";
+  const steps=[
+    { key:"g1", title:"① ディスク暗号化を有効化する",
+      goal:"PCを盗まれても中身を読めなくする。回復キーは必ずPC本体と別の場所に保管。",
+      win:["設定 → プライバシーとセキュリティ → デバイスの暗号化 を「オン」（Pro版は『BitLockerの管理』から有効化）",
+           "回復キーを Microsoftアカウントに保存、または印刷してPCと別に保管（金庫・別クラウド）",
+           "暗号化が完了するまで電源を切らない（数十分〜）"],
+      mac:["システム設定 → プライバシーとセキュリティ → FileVault → 「オンにする」",
+           "復旧キーを iCloud に預けるか、控えて別保管",
+           "再起動後にパスワード入力で起動できることを確認"] },
+    { key:"g2", title:"② ログイン認証＋自動ロックを固める",
+      goal:"離席・置き忘れの一次防御。数分放置で勝手にロックされる状態にする。",
+      win:["設定 → アカウント → サインインオプション で Windows Hello（顔/指紋）か PIN を設定",
+           "設定 → システム → 電源 → 画面とスリープ を『3〜5分』に短縮",
+           "席を立つときは Win+L でその場ロックを習慣化（動的ロックも可）"],
+      mac:["システム設定 → ロック画面 → 「スクリーンセーバ開始後すぐ」or「1分後にパスワードを要求」",
+           "Touch ID を登録（システム設定 → Touch IDとパスワード）",
+           "離席時は Control+Command+Q で即ロック"] },
+    { key:"g3", title:"③ 遠隔ロック・消去をできるようにする",
+      goal:"紛失時に遠隔でロック・初期化する。台数が増える事務所ほど効く。",
+      win:["個人運用：設定 → 更新とセキュリティ → デバイスの検索 を『オン』（Microsoftアカウント必須）→ account.microsoft.com/devices からロック",
+           "組織運用：Microsoft 365 Business の Intune にPCを登録 → 管理画面からリモートワイプ",
+           "事前に『どの画面から消去するか』を所長が一度テストしておく"],
+      mac:["iCloud → 「探す」をオン（システム設定 → Apple ID → 探す → このMacを探す）",
+           "紛失時は iCloud.com/find からロック／消去",
+           "組織運用：MDM（Jamf等）を導入し遠隔管理"] },
+    { key:"g4", title:"④ ローカルの写しを溜め込まない運用にする",
+      goal:"漏れても痛手が小さい状態を保つ。正本＝"+procName+"、PCは作業中の写しだけ。",
+      win:["作業フォルダは正本フォルダ（"+procName+"同期フォルダ）の『外』に作る",
+           "作業が終わった顧客データの写しはローカルから削除（ダウンロードフォルダに残さない）",
+           "月1回、ローカルに顧客データが溜まっていないか棚卸しする"],
+      mac:["作業フォルダは正本フォルダの『外』に作る",
+           "終わった写しは削除、ゴミ箱も空にする",
+           "月1回ローカルを棚卸しする"] }
+  ].filter(s=>ans(s.key)!=="no");
+
+  let proc="";
+  if(steps.length){
+    proc='<div style="margin-top:14px"><div style="font-weight:600;margin-bottom:6px">▼ 各対策の具体手順（採用するものだけ表示）</div>';
+    steps.forEach(s=>{
+      proc+='<div class="callout" style="margin:8px 0"><b>'+s.title+'</b>'+
+        '<div style="font-size:12px;color:var(--sub);margin:4px 0 8px">ねらい：'+s.goal+'</div>'+
+        '<div style="font-size:12px;font-weight:600;margin-bottom:2px">Windows</div>'+
+        '<ol style="margin:0 0 8px 18px;font-size:13px">'+s.win.map(x=>'<li>'+x+'</li>').join("")+'</ol>'+
+        '<div style="font-size:12px;font-weight:600;margin-bottom:2px">Mac</div>'+
+        '<ol style="margin:0 0 0 18px;font-size:13px">'+s.mac.map(x=>'<li>'+x+'</li>').join("")+'</ol>'+
+        '</div>';
+    });
+    proc+='</div>';
+  }
+
+  return '<div class="result-box"><h3>④ 端末（PC紛失・盗難）対策</h3>'+head+tbl+warn+proc+'</div>';
+}
+
+function genSettingsHTML(firm,date){
+  // managed
+  const deny=[];
+  if(ans("a1")==="yes") deny.push('"Read(.env*)"','"Read(**/*.key)"','"Read(**/*.pem)"','"Read(**/credentials*)"');
+  if(ans("a4")==="yes") deny.push('"Read(**/_機密_除外/**)"');
+  if(ans("c1")==="yes") deny.push('"Bash(curl *)"','"Bash(wget *)"');
+  if(ans("c2")==="deny") deny.push('"Bash(rm -rf *)"');
+  if(ans("b1")==="no") deny.push('"WebSearch"');
+  if(ans("e3")==="yes") deny.push('"Edit(**/CLAUDE.md)"','"Write(**/CLAUDE.md)"');
+
+  let mp=[]; // managed permissions inner
+  mp.push('    "deny": [\n      '+deny.join(", ")+'\n    ]');
+  if(ans("e1")==="yes") mp.push('    "allowManagedPermissionRulesOnly": true');
+  if(ans("c4")==="yes") mp.push('    "disableBypassPermissionsMode": "disable"');
+  let managed='{\n  "permissions": {\n'+mp.join(",\n")+'\n  }';
+  if(ans("b3")==="yes") managed+=',\n  "allowManagedMcpServersOnly": true,\n  "allowedMcpServers": [\n    { "serverUrl": "https://api.anthropic.com/*" }\n  ]';
+  if(ans("b4")==="yes") managed+=',\n  "env": {\n    "DISABLE_TELEMETRY": "1",\n    "DISABLE_ERROR_REPORTING": "1"\n  }';
+  managed+='\n}';
+
+  // user
+  const allow=[];
+  if(ans("b1")==="yes") allow.push('"WebSearch"');
+  if(ans("b2")==="yes") allow.push('"WebFetch(domain:nta.go.jp)"','"WebFetch(domain:*.freee.co.jp)"');
+  allow.push('"Bash(ls *)"','"Bash(cat *)"','"Bash(grep *)"');
+  let userObj='{\n  "defaultMode": "'+ans("c3")+'"';
+  userObj+=',\n  "permissions": {\n    "allow": [\n      '+allow.join(", ")+'\n    ]';
+  if(ans("c2")==="ask") userObj+=',\n    "ask": [ "Bash(rm *)" ]';
+  userObj+='\n  }';
+  if(ans("d2")==="yes") userObj+=',\n  "cleanupPeriodDays": 90';
+  userObj+='\n}';
+
+  // project
+  const pdeny=[];
+  if(ans("a3")==="yes") pdeny.push('"Read(//c/Users/**/Desktop/**)"');
+  let proj='{\n  "permissions": {\n    "additionalDirectories": []'+(pdeny.length?',\n    "deny": [ '+pdeny.join(", ")+' ]':'')+'\n  }\n}';
+
+  let extra="";
+  if(ans("e3")==="yes"){
+    extra+='<div class="callout" style="background:var(--warn);border-color:var(--warn-b)"><b>CLAUDE.md の変更制限について：</b>上記①のdenyで「CLAUDE.mdの書き換え禁止」を入れています。これは<b>作業メンバーのPCに配る設定</b>です。ルールを更新する所長・幹部のPCにはこのdenyを入れず、更新後はGitHub経由で全員に配ります（＝メンバーは最新ルールを受け取れるが、自分では書き換えられない）。</div>';
+  }
+  if(ans("f1")==="yes"||ans("f2")==="yes"){
+    extra+='<div class="callout"><b>フック（任意）も採用：</b>PreToolUse / PostToolUse を user または project の settings.json に追加します（自動ブロック・監査ログ）。記述例は別途お渡しします。</div>';
+  }
+
+  return '<div class="result-box"><h3>⑤ Claude Code 設定（自動生成）</h3>'+
+    '<p style="font-size:13px;color:var(--sub)">'+firm+'　／　'+date+'　作成：畠山謙人税理士事務所。『要確認』キー（cleanupPeriodDays等）は適用前に動作検証します。</p>'+
+    codeBlock("① 全員強制 ─ managed-settings.json（個人上書き不可）", managed)+
+    codeBlock("② 個人共通 ─ user settings.json", userObj)+
+    codeBlock("③ 顧問先プロジェクト ─ project .claude/settings.json", proj)+
+    genPlacementGuide()+
+    extra+
+    '<div class="callout"><b>適用の優先順位（強い順）：</b>① managed（上書き不可） ＞ CLI引数 ＞ ③ project-local（settings.local.json） ＞ ③ project（settings.json） ＞ ② user。<br>ただし<b>permissions（allow/deny）は上書きではなく全階層が合算（マージ）</b>されます。だから所長が①managedで入れたdenyは、個人がallowしても外せません。<br>運用：1顧問先＝1フォルダで起動。極秘書類は各フォルダ内の「_機密_除外」へ隔離（①のdenyで遮断）。</div></div>';
+}
+
+// settings.json をどこに置くか（OS別パス＋手順）
+function genPlacementGuide(){
+  const rows=[
+    ["① managed-settings.json","C:\\Program Files\\ClaudeCode\\managed-settings.json","/Library/Application Support/ClaudeCode/managed-settings.json","所長（管理者権限）","全PCに強制。個人で上書き不可。"],
+    ["② user settings.json","C:\\Users\\(ユーザー名)\\.claude\\settings.json","~/.claude/settings.json","各自","その人の全プロジェクト共通。"],
+    ["③ project settings.json","(顧問先ルート)\\.claude\\settings.json","(顧問先ルート)/.claude/settings.json","所長（GitHubで配布）","リポジトリにコミット→pullで全員へ。"],
+    ["③' settings.local.json","(顧問先ルート)\\.claude\\settings.local.json","(顧問先ルート)/.claude/settings.local.json","各自","自分だけ・gitに上げない（.gitignore）。"]
+  ];
+  let t='<div style="font-weight:700;font-size:13px;margin:14px 0 4px;color:var(--brand-d)">▼ どのファイルを・どこに置くか</div>'+
+    '<table class="sum-table"><tr><th style="width:150px">ファイル</th><th>Windows のパス</th><th>Mac のパス</th><th style="width:120px">置く人</th><th style="width:150px">効果</th></tr>';
+  rows.forEach(r=>{ t+='<tr><td><b>'+r[0]+'</b></td><td style="font-family:Consolas,monospace;font-size:11.5px">'+escapeHtml(r[1])+'</td><td style="font-family:Consolas,monospace;font-size:11.5px">'+escapeHtml(r[2])+'</td><td>'+r[3]+'</td><td style="font-size:12px;color:var(--sub)">'+r[4]+'</td></tr>'; });
+  t+='</table>';
+  t+='<div style="font-weight:700;font-size:13px;margin:14px 0 4px;color:var(--brand-d)">▼ 入れる手順（どのファイルも共通）</div>'+
+    '<ol style="font-size:13px;color:var(--ink);margin:0;padding-left:20px;line-height:1.7">'+
+    '<li>上の枠の<b>「コピー」</b>ボタンで本文をコピーする。</li>'+
+    '<li>表のパスの<b>フォルダが無ければ作る</b>（例：エクスプローラーで <code>.claude</code> フォルダを作成）。</li>'+
+    '<li>その場所に表のファイル名で<b>新規テキストとして保存</b>。拡張子は必ず <code>.json</code>（<code>.txt</code> にしない）。</li>'+
+    '<li>保存すれば<b>その場で反映</b>（再起動不要）。例外として <code>model</code> と <code>outputStyle</code> だけは反映に再起動が要ります。</li>'+
+    '</ol>'+
+    '<div class="callout" style="background:var(--warn);border-color:var(--warn-b)"><b>①managed の注意：</b>Windows は <code>C:\\Program Files\\</code> 配下＝<b>管理者権限</b>が必要（保存時に管理者の確認が出ます）。台数が多い事務所は、MDM・グループポリシーでの配布も使えます。迷う場合は、まず<b>③project（GitHubで配布）から始める</b>のが現実的です。</div>';
+  return t;
+}
+// ⑥ マークダウン（ルール文書）の保管・更新マップ
+function genMarkdownPolicy(){
+  const mg=ans("md_global"), mc=ans("md_client")==="yes", lock=ans("e3")==="yes", gh=ans("s4");
+  const topClient = ans("fp_top")==="number" ? "30_顧問先" : "顧問先";
+  const clientDisp = ans("fp_prefix")==="yes" ? "[税] A社" : "A社";
+
+  // 共通ルールの置き場所（配り方で変わる）
+  let commonPath, commonScope, commonWho;
+  if(mg==="managed"){
+    commonPath="C:\\Program Files\\ClaudeCode\\CLAUDE.md（Mac:/Library/Application Support/ClaudeCode/CLAUDE.md）";
+    commonScope="全PCに強制（個人で外せない）"; commonWho="所長（管理者権限）";
+  }else if(mg==="user"){
+    commonPath="各自 C:\\Users\\(ユーザー名)\\.claude\\CLAUDE.md";
+    commonScope="その人の全プロジェクト"; commonWho="各自（手動コピー）";
+  }else{
+    commonPath="(リポジトリルート)\\CLAUDE.md ＋ 00_master\\rules\\*.md";
+    commonScope="全顧問先・全PC"; commonWho="所長（GitHubで配布）";
+  }
+
+  const rows=[
+    ["事務所共通ルール", commonPath, commonScope, commonWho],
+  ];
+  if(mc) rows.push(["顧問先別ルール", topClient+"\\"+clientDisp+"\\CLAUDE.md", "その顧問先だけ（そのフォルダで作業時に自動で読む）", "所長"]);
+  rows.push(["個人メモ・実験", "(各フォルダ)\\CLAUDE.local.md", "自分だけ・gitに上げない", "各自"]);
+
+  let tbl='<div style="font-weight:700;font-size:13px;margin:6px 0 4px;color:var(--brand-d)">▼ 保管マップ（種類ごとに置き場所と更新者を固定する）</div>'+
+    '<table class="sum-table"><tr><th style="width:130px">種類</th><th>置き場所</th><th style="width:170px">適用範囲</th><th style="width:140px">更新する人</th></tr>';
+  rows.forEach(r=>{ tbl+='<tr><td><b>'+r[0]+'</b></td><td style="font-family:Consolas,monospace;font-size:11.5px">'+escapeHtml(r[1])+'</td><td style="font-size:12px;color:var(--sub)">'+r[2]+'</td><td>'+r[3]+'</td></tr>'; });
+  tbl+='</table>';
+
+  // 更新権限
+  let auth;
+  if(lock){
+    auth='<div class="callout" style="background:var(--yes);border-color:var(--yes-b)"><b>更新権限：所長・幹部のみ。</b>作業メンバーのPCでは <b>CLAUDE.md の書き換えを禁止</b>（⑤①managedのdenyでロック済み）。メンバーはClaude Codeに「このルール消して」と頼んでも書き換えられません。<b>読むのは全員・直すのは所長だけ</b>、を仕組みで担保します。</div>';
+  }else{
+    auth='<div class="callout" style="background:var(--warn);border-color:var(--warn-b)"><b>⚠ 現状、作業メンバーもCLAUDE.mdを書き換え可能です。</b>STEP1のE「CLAUDE.md を所長・幹部だけが変更でき、作業メンバーは書き換えられないようにする」を<b>Yes</b>にすると、更新権限を所長に限定できます（推奨）。</div>';
+  }
+
+  // 「メンバーが直せない」をどう担保するか＝2層の合わせ技（片方だけだと穴が残る）
+  // 層2は配り方（md_global）で中身が変わる
+  let layer2;
+  if(mg==="github"){
+    layer2='<b>正本をmainブランチに置き、保護をかける</b>（GitHubでブランチ保護＋PRレビュー必須＋CODEOWNERSで承認者を所長に指定）。'+
+      'メンバーは変更をpushできても、<b>所長の承認なしにmainへ入りません</b>。各PCへは <b>pullで配るだけ</b>なので、'+
+      'ローカルで勝手に書き換えても<b>次のpullで所長版に上書き＝無効化</b>されます。';
+  }else if(mg==="managed"){
+    layer2='正本を <b>managedの場所（C:\\Program Files\\ClaudeCode 配下＝書込みに管理者権限が必要）</b> に置き、'+
+      'メンバーアカウントには書込権限を与えません。更新はMDM・グループポリシーで所長が再配布し、メンバー側のコピーを上書きします。';
+  }else{
+    layer2='<b style="color:var(--no-b)">手動コピー配布には層2がありません。</b>各自の <code>.claude</code> にコピーする運用だと、'+
+      'メンバーが自分のCLAUDE.mdを開いて書き換えても止められず、版ズレも検知できません。'+
+      '本気で更新権限を所長に一本化するなら、上の「共通ルールの配り方」を<b>GitHub配布</b>に切り替えるのが安全です。';
+  }
+  const mech='<div class="callout" style="background:var(--brand-l,#eef4ff);border-color:var(--brand,#5b7cfa)">'+
+    '<div style="font-weight:700;color:var(--brand-d);margin-bottom:4px">▼ 「メンバーが直せない」をどう担保するか（2層の合わせ技）</div>'+
+    '<div style="font-size:13px;line-height:1.7">'+
+    '<b>層1：AI経由の改変を止める。</b>managedのdenyで <code>Edit/Write(**/CLAUDE.md)</code> を禁止（⑤①）。'+
+    'managedは個人設定で外せず、permissionは全階層がマージされるので<b>denyが常に勝ちます</b>。'+
+    '<span style="color:var(--no-b)">ただしこれが止めるのは<b>Claude Code経由の編集だけ</b>。'+
+    'メンバーがVSCodeやメモ帳で直接開いて書き換えるのは、denyでは止まりません。</span><br>'+
+    '<b>層2：手動の書き換えを「無効化」する（正本を所長しか書けない場所に置く）。</b>'+layer2+'<br>'+
+    '<b>まとめ：</b>層1（AIに書かせない）＋層2（人にも書かせない・書いても戻す）を掛けて、はじめて'+
+    '「読むのは全員、直すのは所長だけ」が技術的に担保されます。</div></div>';
+  auth+=mech;
+
+  // 更新フロー
+  let flow='<div style="font-weight:700;font-size:13px;margin:14px 0 4px;color:var(--brand-d)">▼ 更新フロー（共通ルールを直すとき）</div><ol style="font-size:13px;margin:0;padding-left:20px;line-height:1.7">';
+  flow+='<li>所長が共通ルール（CLAUDE.md ／ 00_master\\rules）を直す。</li>';
+  if(mg==="github") flow+='<li>GitHubに反映（push）。各PCは <b>pull</b> で最新化（Claude Codeに任せればコマンドは不要）。</li>';
+  else if(mg==="managed") flow+='<li>所長が managed の場所に再配置（MDM・グループポリシーなら自動配布）。</li>';
+  else flow+='<li>各自が新しいCLAUDE.mdを自分の <code>.claude</code> に手動コピー（※配り漏れ・版ズレが起きやすい）。</li>';
+  if(mc) flow+='<li>顧問先固有の変更は、<b>その顧問先フォルダのCLAUDE.md</b>を所長が直す（共通には書かない）。</li>';
+  flow+='<li>メンバーは最新ルールを<b>受け取って使うだけ</b>（自分では書き換えない）。</li></ol>';
+
+  // 補足（@import・遅延ロード）
+  let tips='<div class="callout"><b>長くなったら分割：</b>共通CLAUDE.mdが膨らんだら、本文に <code>@00_master/rules/accounting.md</code> のように書いて別ファイルを取り込めます（取り込みは最大4階層まで）。畠山事務所もこの方式（CLAUDE.md＋rules分割）です。';
+  if(mc) tips+='<br><b>顧問先別の注意：</b>顧問先フォルダのCLAUDE.mdは<b>そのフォルダのファイルを触った時に読まれます</b>（起動直後は未読）。長い会話で文脈圧縮（/compact）が起きると再読込されないため、<b>絶対に外せない顧問先ルールは共通側にも要点を一行残す</b>と安全です。';
+  tips+='</div>';
+
+  return '<div class="result-box"><h3>⑥ マークダウン（ルール文書）の保管・更新ルール</h3>'+
+    '<p style="font-size:13px;color:var(--sub)">CLAUDE.md は「事務所の頭脳」。<b>誰が・どこで・どう直すか</b>を固定して、全PC・全スタッフが同じルールで動くようにします。</p>'+
+    tbl+auth+flow+tips+'</div>';
+}
+
+function codeBlock(title,code){
+  const id="cb"+Math.random().toString(36).slice(2);
+  return '<div class="code-head"><h4>'+title+'</h4><button class="copybtn" data-copy="'+id+'">コピー</button></div>'+
+    '<pre class="code" id="'+id+'">'+escapeHtml(code)+'</pre>';
+}
+function escapeHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function bindCopy(){
+  document.querySelectorAll(".copybtn").forEach(b=>{
+    b.onclick=()=>{ const el=document.getElementById(b.dataset.copy);
+      navigator.clipboard.writeText(el.textContent).then(()=>{ const t=b.textContent; b.textContent="コピーしました"; setTimeout(()=>b.textContent=t,1200); }); };
+  });
+}
+
+/* ============ 初期化 ============ */
+function resetAll(){ if(confirm("回答をすべて初期化（畠山推奨に戻す）しますか？")){ localStorage.removeItem(STORE_KEY); state={}; ensureDefaults(); initFields(); renderAll(); go(0); } }
+
+window.onbeforeprint = function(){ renderResult(); };
+window.onafterprint  = function(){ go(cur); };
+function initFields(){
+  document.getElementById("firmName").value=state.firm||"";
+  document.getElementById("madeDate").value=state.date||todayStr();
+  document.getElementById("firmName").oninput=e=>{ state.firm=e.target.value; save(); };
+  document.getElementById("madeDate").oninput=e=>{ state.date=e.target.value; save(); };
+}
+function renderAll(){ renderSteps(); renderPolicies(); renderFields(); renderStorage(); renderFolderConfig(); renderMdConfig(); }
+ensureDefaults(); initFields(); renderAll(); go(0);
+</script>
+</body>
+</html>
