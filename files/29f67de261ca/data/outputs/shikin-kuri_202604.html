@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>株式会社StartPass 資金繰り表 2025/11〜2026/07</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Meiryo UI", Meiryo, sans-serif; font-size: 13px; background: #f5f6fa; color: #2d2d2d; }
+  .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+  h1 { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 12px; margin-bottom: 24px; }
+
+  /* KPI Cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .kpi-card { background: #fff; border-radius: 8px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .kpi-label { font-size: 11px; color: #888; margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: bold; color: #1a1a2e; }
+  .kpi-sub { font-size: 11px; color: #999; margin-top: 4px; }
+  .kpi-card.warning .kpi-value { color: #e74c3c; }
+  .kpi-card.ok .kpi-value { color: #27ae60; }
+
+  /* Section */
+  .section-title { font-size: 14px; font-weight: bold; margin-bottom: 10px; padding-left: 8px; border-left: 3px solid #4361ee; }
+
+  /* Chart containers */
+  .chart-card { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 28px; }
+  .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .chart-title { font-size: 14px; font-weight: bold; padding-left: 8px; border-left: 3px solid #4361ee; }
+  .chart-note { font-size: 11px; color: #888; text-align: right; }
+  .chart-wrap { position: relative; height: 300px; }
+  .chart-wrap.tall { height: 260px; }
+
+  .legend-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #666; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .legend-line { width: 20px; height: 3px; border-radius: 1px; flex-shrink: 0; }
+  .forecast-badge { background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 2px 7px; font-size: 10px; color: #856404; font-weight: bold; }
+
+  /* Tables */
+  .table-wrap { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow-x: auto; margin-bottom: 28px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #f0f2ff; color: #333; font-weight: bold; padding: 9px 12px; text-align: right; font-size: 12px; white-space: nowrap; border-bottom: 2px solid #d8ddff; }
+  th:first-child { text-align: left; }
+  td { padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right; font-size: 12px; white-space: nowrap; }
+  td:first-child { text-align: left; }
+  tr:last-child td { border-bottom: none; }
+  tr.total td { background: #f0f2ff; font-weight: bold; }
+  tr.diff td { background: #fff8f0; font-weight: bold; }
+  tr.forecast td { background: #fffbef; color: #856404; }
+  tr.forecast td:first-child { font-style: italic; }
+  .negative { color: #e74c3c; }
+  .positive { color: #27ae60; }
+  .neutral { color: #666; }
+
+  /* Alert */
+  .alert { border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 12px; line-height: 1.6; }
+  .alert.warning { background: #fff3cd; border: 1px solid #ffc107; color: #856404; }
+  .alert.info { background: #e8f4fd; border: 1px solid #bee3f8; color: #1a5a7a; }
+
+  th.forecast-col { background: #fffbef; color: #856404; border-bottom: 2px solid #ffd966; }
+  .footer { text-align: center; color: #aaa; font-size: 11px; margin-top: 30px; padding-bottom: 30px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>株式会社StartPass ｜ 資金繰り表</h1>
+  <div class="subtitle">実績: 2025年11月〜2026年4月 ／ 予測: 2026年5〜7月（第5期 前半）　作成日: 2026年4月30日　データ: freee会計API</div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">現在の現金・預金残高</div>
+      <div class="kpi-value">198.0M</div>
+      <div class="kpi-sub">（2026年4月末）</div>
+    </div>
+    <div class="kpi-card warning">
+      <div class="kpi-label">6ヶ月累計キャッシュ減少</div>
+      <div class="kpi-value">▲24.7M</div>
+      <div class="kpi-sub">2025年11月〜2026年4月</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">月平均バーンレート</div>
+      <div class="kpi-value">▲4.1M</div>
+      <div class="kpi-sub">6ヶ月平均 / 月</div>
+    </div>
+    <div class="kpi-card ok">
+      <div class="kpi-label">キャッシュランウェイ（実効）</div>
+      <div class="kpi-value">約7.6ヶ月</div>
+      <div class="kpi-sub">オペレーティング残31M÷バーン4.1M</div>
+    </div>
+  </div>
+
+  <!-- Chart 1: 入金・出金・預金残 複合グラフ -->
+  <div class="section-title">Ⅰ. 月次入金・出金・預金残高 推移（実績＋予測）</div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title" style="border:none; padding:0; font-size:13px;">棒グラフ: 月次入金 / 出金（万円）　折線: 預金残高合計（万円）</div>
+        <div class="legend-row" style="margin-top:8px;">
+          <div class="legend-item"><div class="legend-dot" style="background:#4361ee;"></div>入金（実績）</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e74c3c;"></div>出金（実績）</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#aab5f5; border: 1px dashed #4361ee;"></div>入金（予測）</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffb3ae; border: 1px dashed #e74c3c;"></div>出金（予測）</div>
+          <div class="legend-item"><div class="legend-line" style="background:#27ae60;"></div>預金残高（実績）</div>
+          <div class="legend-item"><div class="legend-line" style="background:#27ae60; border-top: 2px dashed #27ae60; height:0;"></div>預金残高（予測）</div>
+        </div>
+      </div>
+      <span class="forecast-badge">5〜7月は予測値</span>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="mainChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart 2: オペレーティング残高推移 -->
+  <div class="section-title">Ⅱ. 実効オペレーティング残高 推移（三井住友除き）</div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <div>
+        <div style="font-size:12px; color:#666;">GMOあおぞら＋みずほ口座の合計残高。三井住友167Mは資本性借入金担保として拘束の可能性があるため除外。</div>
+      </div>
+      <span class="forecast-badge">5〜7月は予測値</span>
+    </div>
+    <div class="chart-wrap tall">
+      <canvas id="opChart"></canvas>
+    </div>
+  </div>
+
+  <!-- 入金・出金・残高 数値表 -->
+  <div class="section-title">Ⅲ. 月次キャッシュフロー 数値一覧</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th>11月<br><small>実績</small></th>
+          <th>12月<br><small>実績</small></th>
+          <th>1月<br><small>実績</small></th>
+          <th>2月<br><small>実績</small></th>
+          <th>3月<br><small>実績</small></th>
+          <th>4月<br><small>実績</small></th>
+          <th class="forecast-col">5月<br><small>予測</small></th>
+          <th class="forecast-col">6月<br><small>予測</small></th>
+          <th class="forecast-col">7月<br><small>予測</small></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>月次売上</td>
+          <td class="positive">8,526,883</td>
+          <td class="positive">10,607,137</td>
+          <td class="positive">11,238,436</td>
+          <td class="positive">8,517,957</td>
+          <td class="positive">14,287,952</td>
+          <td class="positive">3,810,455 <small style="color:#888">※</small></td>
+          <td class="positive" style="color:#856404;">11,500,000</td>
+          <td class="positive" style="color:#856404;">12,000,000</td>
+          <td class="positive" style="color:#856404;">12,500,000</td>
+        </tr>
+        <tr>
+          <td>入金（現金収入）</td>
+          <td class="positive">10,943,874</td>
+          <td class="positive">9,326,965</td>
+          <td class="positive">11,575,526</td>
+          <td class="positive">11,716,776</td>
+          <td class="positive">8,525,131</td>
+          <td class="positive">13,842,794</td>
+          <td class="positive" style="color:#856404;">12,000,000</td>
+          <td class="positive" style="color:#856404;">11,500,000</td>
+          <td class="positive" style="color:#856404;">12,000,000</td>
+        </tr>
+        <tr>
+          <td>出金（現金支出）</td>
+          <td class="negative">14,975,838</td>
+          <td class="negative">17,143,549</td>
+          <td class="negative">14,646,229</td>
+          <td class="negative">14,703,382</td>
+          <td class="negative">13,570,608</td>
+          <td class="negative">15,573,357</td>
+          <td class="negative" style="color:#c0392b;">14,500,000</td>
+          <td class="negative" style="color:#c0392b;">14,000,000</td>
+          <td class="negative" style="color:#c0392b;">13,500,000</td>
+        </tr>
+        <tr class="diff">
+          <td>月次純増減</td>
+          <td class="negative">▲4,031,964</td>
+          <td class="negative">▲7,816,584</td>
+          <td class="negative">▲3,070,703</td>
+          <td class="negative">▲2,986,606</td>
+          <td class="negative">▲5,045,477</td>
+          <td class="negative">▲1,730,563</td>
+          <td class="negative" style="color:#856404;">▲2,500,000</td>
+          <td class="negative" style="color:#856404;">▲2,500,000</td>
+          <td class="negative" style="color:#856404;">▲1,500,000</td>
+        </tr>
+        <tr class="total">
+          <td>月末預金残（合計）</td>
+          <td>218,685,206</td>
+          <td>210,868,622</td>
+          <td>207,797,919</td>
+          <td>204,811,313</td>
+          <td>199,765,836</td>
+          <td>198,035,273</td>
+          <td style="color:#856404; font-weight:bold;">195,535,273</td>
+          <td style="color:#856404; font-weight:bold;">193,035,273</td>
+          <td style="color:#856404; font-weight:bold;">191,535,273</td>
+        </tr>
+        <tr>
+          <td>うちオペレーティング残（GMO＋みずほ）</td>
+          <td>51,458,631</td>
+          <td>43,353,917</td>
+          <td>40,600,811</td>
+          <td>37,737,380</td>
+          <td>32,718,548</td>
+          <td>31,002,513</td>
+          <td style="color:#856404;">28,502,513</td>
+          <td style="color:#856404;">26,002,513</td>
+          <td style="color:#856404;">24,502,513</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert info" style="margin-top:-14px; margin-bottom:28px;">
+    ※ 4月実績の売上は2026年4月30日（本日）時点。未入力の仕訳が残っている可能性があり、実際は10〜11M程度の見込みです。入金・出金の算出式は「入金＝売上－売上債権増減」「出金＝入金－月次キャッシュ純増減」。
+  </div>
+
+  <!-- 月次P&L（売上・費用） -->
+  <div class="section-title">Ⅳ. 月次 売上高・費用 推移</div>
+  <div class="chart-card">
+    <div class="chart-wrap tall">
+      <canvas id="plChart"></canvas>
+    </div>
+  </div>
+
+  <!-- 残高推移テーブル -->
+  <div class="section-title">Ⅴ. 口座別 現金・預金残高 推移</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>口座</th>
+          <th>期初</th>
+          <th>11月末</th>
+          <th>12月末</th>
+          <th>1月末</th>
+          <th>2月末</th>
+          <th>3月末</th>
+          <th>4月末</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>GMOあおぞらネット（営業口座）</td>
+          <td>50,153,336</td>
+          <td>46,378,827</td>
+          <td>38,274,113</td>
+          <td>35,521,007</td>
+          <td>31,157,776</td>
+          <td>27,324,547</td>
+          <td>25,922,709</td>
+        </tr>
+        <tr>
+          <td>三井住友銀行（法人）</td>
+          <td>167,484,030</td>
+          <td>167,226,575</td>
+          <td>167,212,047</td>
+          <td>167,197,108</td>
+          <td>167,073,733</td>
+          <td>167,047,288</td>
+          <td>167,032,760</td>
+        </tr>
+        <tr>
+          <td>みずほ銀行（法人）</td>
+          <td>5,079,804</td>
+          <td>5,079,804</td>
+          <td>5,079,804</td>
+          <td>5,079,804</td>
+          <td>5,079,804</td>
+          <td>5,079,804</td>
+          <td>5,079,804</td>
+        </tr>
+        <tr>
+          <td>UPSIDER ／ Stripe（一時）</td>
+          <td>0</td>
+          <td>0</td>
+          <td>302,658</td>
+          <td>0</td>
+          <td>1,500,000</td>
+          <td>314,197</td>
+          <td>0</td>
+        </tr>
+        <tr class="total">
+          <td>合　計</td>
+          <td>222,717,170</td>
+          <td>218,685,206</td>
+          <td>210,868,622</td>
+          <td>207,797,919</td>
+          <td>204,811,313</td>
+          <td>199,765,836</td>
+          <td>198,035,273</td>
+        </tr>
+        <tr class="diff">
+          <td>月次増減</td>
+          <td class="neutral">—</td>
+          <td class="negative">▲4,031,964</td>
+          <td class="negative">▲7,816,584</td>
+          <td class="negative">▲3,070,703</td>
+          <td class="negative">▲2,986,606</td>
+          <td class="negative">▲5,045,477</td>
+          <td class="negative">▲1,730,563</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- P&L サマリー累計 -->
+  <div class="section-title">Ⅵ. P&L サマリー（累計：2025/11〜2026/04）</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>科目</th>
+          <th style="text-align:right">累計金額</th>
+          <th style="text-align:right">月平均</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>売上高（合計）</td>
+          <td class="positive">57,528,820</td>
+          <td class="positive">9,588,137</td>
+        </tr>
+        <tr><td style="padding-left:20px; color:#666">　うち SaaS収入</td><td>22,657,192</td><td>3,776,199</td></tr>
+        <tr><td style="padding-left:20px; color:#666">　うち トランザクション収入</td><td>17,910,882</td><td>2,985,147</td></tr>
+        <tr><td style="padding-left:20px; color:#666">　うち 継続役務収入</td><td>15,432,230</td><td>2,572,038</td></tr>
+        <tr><td style="padding-left:20px; color:#666">　うち その他収入</td><td>1,528,516</td><td>254,753</td></tr>
+        <tr>
+          <td>販売管理費（合計）</td>
+          <td class="negative">82,525,499</td>
+          <td class="negative">13,754,250</td>
+        </tr>
+        <tr><td style="padding-left:20px; color:#666">　うち 給料手当</td><td class="negative">20,921,926</td><td class="negative">3,487,021</td></tr>
+        <tr><td style="padding-left:20px; color:#666">　うち 外注費</td><td class="negative">16,890,184</td><td class="negative">2,815,031</td></tr>
+        <tr><td style="padding-left:20px; color:#666">　うち システム利用料</td><td class="negative">8,930,103</td><td class="negative">1,488,351</td></tr>
+        <tr><td style="padding-left:20px; color:#666">　うち 減価償却費（非現金）</td><td class="neutral">7,691,026</td><td class="neutral">1,281,838</td></tr>
+        <tr><td style="padding-left:20px; color:#666">　うち 地代家賃</td><td class="negative">5,665,957</td><td class="negative">944,326</td></tr>
+        <tr><td style="padding-left:20px; color:#666">　うち 広告宣伝費</td><td class="negative">5,600,544</td><td class="negative">933,424</td></tr>
+        <tr class="total">
+          <td>営業損益</td>
+          <td class="negative">▲26,182,835</td>
+          <td class="negative">▲4,363,806</td>
+        </tr>
+        <tr class="total">
+          <td>当期純損益</td>
+          <td class="negative">▲25,955,360</td>
+          <td class="negative">▲4,325,893</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 確認事項 -->
+  <div class="section-title">Ⅶ. 確認事項・税務上の注意点</div>
+  <div class="alert warning">
+    <strong>【税理士確認事項】</strong><br><br>
+    ① <strong>三井住友残高（167M）の拘束性</strong>：資本性借入金30Mの担保・供託条件確認が必要。実効残高はGMO（25.9M）＋みずほ（5.1M）＝ <strong>31.0M</strong>。<br><br>
+    ② <strong>買掛金が4月末ゼロ</strong>：期初400万→ゼロ。全額精算済みか仕訳漏れかを確認。<br><br>
+    ③ <strong>未払金の急減（12M→0.7M）</strong>：4月に11M超の一括払いが発生した可能性あり。出金計算に大きく影響。<br><br>
+    ④ <strong>ランウェイ見直し</strong>：実効残31M ÷ 月平均バーン4.1M ≈ <strong>7.6ヶ月</strong>（〜2026年12月頃）。次回資金調達スケジュールとの整合確認をお願いします。<br><br>
+    ⑤ <strong>3月売上急増（14.3M）</strong>：通常月（8〜11M）比で突出。一時的か継続的な成長かを確認してください。
+  </div>
+
+  <div class="footer">
+    作成: 畠山謙人税理士事務所 × Claude Code　|　データ: freee会計 API（2026/04/30）<br>
+    入金＝売上－売上債権増減、出金＝入金－月次キャッシュ純増減（間接法）。5〜7月は予測値。
+  </div>
+</div>
+
+<script>
+// ---- データ定義 ----
+const months  = ['期初', '11月実', '12月実', '1月実', '2月実', '3月実', '4月実', '5月予', '6月予', '7月予'];
+const monthsShort = ['期初', '11月', '12月', '1月', '2月', '3月', '4月', '5月▲', '6月▲', '7月▲'];
+
+// 万円換算
+function man(v) { return Math.round(v / 10000); }
+
+const nyukin_actual  = [null, man(10943874), man(9326965),  man(11575526), man(11716776), man(8525131),  man(13842794)];
+const nyukin_fc      = [null, null, null, null, null, null, null, 1200, 1150, 1200];
+const shukkin_actual = [null, man(14975838), man(17143549), man(14646229), man(14703382), man(13570608), man(15573357)];
+const shukkin_fc     = [null, null, null, null, null, null, null, 1450, 1400, 1350];
+
+// 預金残（合計）万円
+const yokin_all = [man(222717170), man(218685206), man(210868622), man(207797919), man(204811313), man(199765836), man(198035273), 19554, 19304, 19154];
+// オペレーティング残（GMO+みずほ）万円
+const yokin_op  = [man(55233140),  man(51458631),  man(43353917),  man(40600811),  man(37737380),  man(32718548),  man(31002513),  2850, 2600, 2450];
+
+// 売上・費用（月次）万円
+const uriage = [null, man(8526883), man(10607137), man(11238436), man(8517957), man(14287952), man(3810455)];
+const hiyo   = [null, man(13308064-704185), man(14338474-704185), man(16135520-704185), man(14800441-704185), man(14608056-704185), man(4070177-704185)];
+// ※費用は販管費+原価から減価償却を除いたキャッシュコスト
+
+// ---- Chart 1: 入金・出金（棒）+ 預金残（線）複合グラフ ----
+const ctx1 = document.getElementById('mainChart').getContext('2d');
+new Chart(ctx1, {
+  data: {
+    labels: monthsShort,
+    datasets: [
+      {
+        type: 'bar',
+        label: '入金（実績）',
+        data: [null, ...nyukin_actual.slice(1,7), null, null, null],
+        backgroundColor: 'rgba(67,97,238,0.75)',
+        borderRadius: 4,
+        yAxisID: 'y',
+        order: 2
+      },
+      {
+        type: 'bar',
+        label: '入金（予測）',
+        data: [null, null, null, null, null, null, null, ...nyukin_fc.slice(7)],
+        backgroundColor: 'rgba(170,181,245,0.75)',
+        borderRadius: 4,
+        borderColor: 'rgba(67,97,238,0.5)',
+        borderWidth: 1,
+        yAxisID: 'y',
+        order: 2
+      },
+      {
+        type: 'bar',
+        label: '出金（実績）',
+        data: [null, ...shukkin_actual.slice(1,7), null, null, null],
+        backgroundColor: 'rgba(231,76,60,0.70)',
+        borderRadius: 4,
+        yAxisID: 'y',
+        order: 2
+      },
+      {
+        type: 'bar',
+        label: '出金（予測）',
+        data: [null, null, null, null, null, null, null, ...shukkin_fc.slice(7)],
+        backgroundColor: 'rgba(255,179,174,0.75)',
+        borderRadius: 4,
+        borderColor: 'rgba(231,76,60,0.5)',
+        borderWidth: 1,
+        yAxisID: 'y',
+        order: 2
+      },
+      {
+        type: 'line',
+        label: '預金残高・合計（実績）',
+        data: [...yokin_all.slice(0,7), null, null, null],
+        borderColor: '#27ae60',
+        backgroundColor: 'rgba(39,174,96,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: '#27ae60',
+        fill: false,
+        tension: 0.3,
+        yAxisID: 'y2',
+        order: 1
+      },
+      {
+        type: 'line',
+        label: '預金残高・合計（予測）',
+        data: [null, null, null, null, null, null, ...yokin_all.slice(6)],
+        borderColor: '#27ae60',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderDash: [6,4],
+        pointRadius: 4,
+        pointBackgroundColor: '#27ae60',
+        fill: false,
+        tension: 0.3,
+        yAxisID: 'y2',
+        order: 1
+      },
+      {
+        type: 'line',
+        label: 'オペレーティング残（実績）',
+        data: [...yokin_op.slice(0,7), null, null, null],
+        borderColor: '#e67e22',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: '#e67e22',
+        fill: false,
+        tension: 0.3,
+        yAxisID: 'y2',
+        order: 1
+      },
+      {
+        type: 'line',
+        label: 'オペレーティング残（予測）',
+        data: [null, null, null, null, null, null, ...yokin_op.slice(6)],
+        borderColor: '#e67e22',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderDash: [5,4],
+        pointRadius: 3,
+        pointBackgroundColor: '#e67e22',
+        fill: false,
+        tension: 0.3,
+        yAxisID: 'y2',
+        order: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y == null ? '-' : ctx.parsed.y.toLocaleString()) + '万円'
+        }
+      },
+      annotation: {
+        annotations: {
+          forecast: {
+            type: 'box',
+            xMin: 6.5, xMax: 9.5,
+            backgroundColor: 'rgba(255,251,239,0.45)',
+            borderColor: '#ffc107',
+            borderWidth: 1,
+            label: { content: '予測ゾーン', display: true, position: 'start', color: '#856404', font: { size: 10 } }
+          }
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } },
+      y: {
+        type: 'linear',
+        position: 'left',
+        title: { display: true, text: '入金・出金（万円）', font: { size: 11 }, color: '#666' },
+        grid: { color: '#f0f0f0' },
+        ticks: { font: { size: 10 }, callback: v => v.toLocaleString() + '万' },
+        min: 0, max: 2200
+      },
+      y2: {
+        type: 'linear',
+        position: 'right',
+        title: { display: true, text: '預金残高（万円）', font: { size: 11 }, color: '#27ae60' },
+        grid: { drawOnChartArea: false },
+        ticks: { font: { size: 10 }, color: '#27ae60', callback: v => v.toLocaleString() + '万' },
+        min: 0, max: 26000
+      }
+    }
+  }
+});
+
+// ---- Chart 2: オペレーティング残高 ----
+const ctx2 = document.getElementById('opChart').getContext('2d');
+new Chart(ctx2, {
+  type: 'line',
+  data: {
+    labels: monthsShort,
+    datasets: [
+      {
+        label: 'オペレーティング残高（実績）',
+        data: [...yokin_op.slice(0,7), null, null, null],
+        borderColor: '#e67e22',
+        backgroundColor: 'rgba(230,126,34,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 5,
+        pointBackgroundColor: '#e67e22',
+        fill: true,
+        tension: 0.3
+      },
+      {
+        label: 'オペレーティング残高（予測）',
+        data: [null, null, null, null, null, null, ...yokin_op.slice(6)],
+        borderColor: '#e67e22',
+        backgroundColor: 'rgba(230,126,34,0.04)',
+        borderWidth: 2,
+        borderDash: [7,4],
+        pointRadius: 5,
+        pointBackgroundColor: '#ffc57a',
+        fill: true,
+        tension: 0.3
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 11 } } },
+      tooltip: {
+        callbacks: {
+          label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y == null ? '-' : ctx.parsed.y.toLocaleString()) + '万円'
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } },
+      y: {
+        min: 0,
+        ticks: { font: { size: 10 }, callback: v => v.toLocaleString() + '万' },
+        grid: { color: '#f0f0f0' }
+      }
+    }
+  }
+});
+
+// ---- Chart 3: 月次売上・費用 ----
+const ctx3 = document.getElementById('plChart').getContext('2d');
+new Chart(ctx3, {
+  type: 'bar',
+  data: {
+    labels: ['11月', '12月', '1月', '2月', '3月', '4月※'],
+    datasets: [
+      {
+        label: '月次売上（万円）',
+        data: uriage.slice(1).map(v => v),
+        backgroundColor: 'rgba(67,97,238,0.7)',
+        borderRadius: 4
+      },
+      {
+        label: '現金経費（減価償却除く）（万円）',
+        data: hiyo.slice(1).map(v => v),
+        backgroundColor: 'rgba(231,76,60,0.65)',
+        borderRadius: 4
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 11 } } },
+      tooltip: {
+        callbacks: {
+          label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y == null ? '-' : ctx.parsed.y.toLocaleString()) + '万円'
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } },
+      y: {
+        min: 0,
+        ticks: { font: { size: 10 }, callback: v => v.toLocaleString() + '万' },
+        grid: { color: '#f0f0f0' }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
