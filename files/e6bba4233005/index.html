@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ドットエフ株式会社 財務ダッシュボード（2026-07-22時点）</title>
+<style>
+  :root {
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --ink:         #0b0b0b;
+    --ink-2:       #52514e;
+    --ink-muted:   #898781;
+    --grid:        #e1e0d9;
+    --baseline:    #c3c2b7;
+    --border:      rgba(11,11,11,0.10);
+    --blue:        #2a78d6;  /* 今期実績 */
+    --blue-light:  #9ec5f4;  /* 予測（同一指標の低確度） */
+    --blue-mid:    #6da7ec;
+    --red:         #d03b3b;  /* マイナスCF・残高警告 */
+    --red-light:   #f2c4c4;  /* 予測マイナスCF */
+    --good:        #006300;
+    --warn-bg:     #fdf3e2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 48px; }
+
+  header.page-head { margin-bottom: 20px; }
+  header.page-head h1 { font-size: 22px; font-weight: 700; }
+  .head-meta { color: var(--ink-2); font-size: 13px; margin-top: 2px; }
+  .head-meta span + span::before { content: "｜"; color: var(--baseline); margin: 0 6px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .card .label { font-size: 12px; color: var(--ink-2); }
+  .card .value { font-size: 24px; font-weight: 600; margin-top: 2px; letter-spacing: 0.01em; }
+  .card .sub { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+  .card .delta-up { color: var(--good); font-weight: 600; }
+  .card .delta-down { color: var(--red); font-weight: 600; }
+
+  figure.chart-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 18px 12px; margin-bottom: 24px;
+  }
+  figure.chart-card h2 { font-size: 15px; font-weight: 700; }
+  figure.chart-card .chart-sub { font-size: 12px; color: var(--ink-2); margin-bottom: 8px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--ink-2); margin: 6px 0 4px; }
+  .legend .key { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .legend .line-key { width: 18px; height: 0; border-top: 2px solid; display: inline-block; }
+  .legend .line-key.dashed { border-top-style: dashed; }
+  .chart-holder { position: relative; width: 100%; }
+  .chart-holder svg { display: block; width: 100%; height: auto; }
+
+  .tooltip {
+    position: absolute; pointer-events: none; z-index: 10; display: none;
+    background: var(--ink); color: #fff; border-radius: 6px; padding: 6px 10px;
+    font-size: 12px; line-height: 1.5; white-space: nowrap;
+    transform: translate(-50%, calc(-100% - 10px));
+  }
+  .tooltip .tt-title { color: #c3c2b7; }
+
+  .panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px; margin-bottom: 24px;
+  }
+  .panel h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .panel .panel-sub { font-size: 12px; color: var(--ink-2); margin-bottom: 12px; }
+  .assump-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .assump label { display: block; font-size: 12px; color: var(--ink-2); margin-bottom: 4px; }
+  .assump select, .assump input {
+    width: 100%; padding: 7px 9px; font-size: 14px; font-family: inherit;
+    border: 1px solid var(--baseline); border-radius: 6px; background: #fff; color: var(--ink);
+  }
+  .assump input:focus, .assump select:focus { outline: 2px solid var(--blue-mid); outline-offset: 0; border-color: var(--blue); }
+  .assump .hint { font-size: 11px; color: var(--ink-muted); margin-top: 3px; }
+  .panel .btn-row { margin-top: 14px; }
+  button.reset {
+    font: inherit; font-size: 13px; padding: 7px 14px; border-radius: 6px;
+    border: 1px solid var(--baseline); background: #fff; color: var(--ink-2); cursor: pointer;
+  }
+  button.reset:hover { background: var(--page); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+  th { color: var(--ink-2); font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--baseline); }
+  th:first-child, td:first-child { text-align: left; }
+  tr.total-row td { font-weight: 700; border-top: 1px solid var(--baseline); border-bottom: none; }
+  td.neg-cash { background: #fbeaea; color: var(--red); font-weight: 700; }
+  td.neg { color: var(--red); }
+  .table-scroll { overflow-x: auto; }
+  .fc-badge { font-size: 11px; color: var(--ink-muted); font-weight: 400; margin-left: 4px; }
+
+  details.table-view { margin-top: 8px; }
+  details.table-view summary { font-size: 12px; color: var(--ink-2); cursor: pointer; padding: 4px 0; }
+
+  .note {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; font-size: 12px; color: var(--ink-2);
+  }
+  .note ul { margin-left: 18px; }
+  .warn-box {
+    background: var(--warn-bg); border: 1px solid #ecd9ae; border-radius: 8px;
+    padding: 10px 14px; font-size: 13px; margin-bottom: 16px;
+  }
+  @media (max-width: 640px) {
+    .card .value { font-size: 20px; }
+    body { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="page-head">
+    <h1 id="companyTitle"></h1>
+    <div class="head-meta">
+      <span id="fyLabel"></span><span id="fetchedAt"></span><span>freee試算表ベースの概算</span>
+    </div>
+  </header>
+
+  <div id="alertArea"></div>
+
+  <section class="cards" id="kpiCards"></section>
+
+  <figure class="chart-card">
+    <h2>売上高の推移</h2>
+    <div class="chart-sub">単位: 百万円。実績と予測、前期同月の比較。</div>
+    <div class="legend" id="legendSales"></div>
+    <div class="chart-holder" id="chartSales"></div>
+  </figure>
+
+  <figure class="chart-card">
+    <h2>営業利益の推移</h2>
+    <div class="chart-sub">単位: 百万円。実績と予測、前期同月の比較。</div>
+    <div class="legend" id="legendOp"></div>
+    <div class="chart-holder" id="chartOp"></div>
+  </figure>
+
+  <figure class="chart-card">
+    <h2>現預金残高の推移と予測</h2>
+    <div class="chart-sub">単位: 百万円。月末時点の現金及び預金残高。</div>
+    <div class="legend" id="legendCash"></div>
+    <div class="chart-holder" id="chartCash"></div>
+  </figure>
+
+  <figure class="chart-card">
+    <h2>月次キャッシュフロー（現預金の増減）</h2>
+    <div class="chart-sub">単位: 百万円。各月の現預金残高の増減額。予測月は営業利益にキャッシュフロー調整額を加えた試算。</div>
+    <div class="legend" id="legendCF"></div>
+    <div class="chart-holder" id="chartCF"></div>
+  </figure>
+
+  <section class="panel">
+    <h2>予測の前提</h2>
+    <div class="panel-sub">値を変更すると、チャートと予測テーブルが即時に再計算されます。初期値は今期実績から自動算定しています。</div>
+    <div class="assump-grid">
+      <div class="assump">
+        <label for="inpMode">売上の予測方法</label>
+        <select id="inpMode">
+          <option value="yoy">前年同月 × 今期成長率</option>
+          <option value="flat">直近3ヶ月平均で横ばい</option>
+          <option value="manual">手動成長率（月次）</option>
+        </select>
+        <div class="hint" id="hintMode"></div>
+      </div>
+      <div class="assump" id="rowGrowth" style="display:none">
+        <label for="inpGrowth">月次成長率（%）</label>
+        <input type="number" id="inpGrowth" step="0.5" value="0">
+        <div class="hint">直近3ヶ月平均を起点に複利で適用します。</div>
+      </div>
+      <div class="assump">
+        <label for="inpVar">変動費率（売上比 %）</label>
+        <input type="number" id="inpVar" step="0.5" min="0" max="100">
+        <div class="hint">売上原価と販管費のうち売上に連動する部分。</div>
+      </div>
+      <div class="assump">
+        <label for="inpFixed">月額固定費（円）</label>
+        <input type="number" id="inpFixed" step="10000">
+        <div class="hint">売上に連動しない毎月の費用。</div>
+      </div>
+      <div class="assump">
+        <label for="inpAdj">キャッシュフロー調整額（円/月）</label>
+        <input type="number" id="inpAdj" step="10000">
+        <div class="hint">税金・借入返済・減価償却・入金サイト等のネット調整。予測純CF ＝ 予測営業利益 ＋ 本調整額。</div>
+      </div>
+    </div>
+    <div class="btn-row"><button class="reset" id="btnReset">初期値に戻す</button></div>
+  </section>
+
+  <section class="panel">
+    <h2>預金残高の月次予測</h2>
+    <div class="panel-sub" id="fcTableSub"></div>
+    <div class="table-scroll"><table id="fcTable"></table></div>
+  </section>
+
+  <section class="panel">
+    <h2>実績の月次一覧</h2>
+    <div class="table-scroll"><table id="actualTable"></table></div>
+  </section>
+
+  <section class="panel">
+    <h2>口座残高の内訳</h2>
+    <div class="panel-sub" id="walletSub"></div>
+    <div class="table-scroll"><table id="walletTable"></table></div>
+  </section>
+
+  <footer class="note">
+    <ul>
+      <li>本ダッシュボードはfreeeの試算表を集計した概算です。最新月は未登録明細により今後変動する可能性があります。</li>
+      <li>将来予測は上記「予測の前提」に基づく機械的な試算であり、実際の結果を保証するものではありません。</li>
+      <li>税務・経営に関する判断は、顧問税理士（畠山謙人税理士事務所）にご確認ください。</li>
+      <li id="noteUpToDate" style="display:none"></li>
+    </ul>
+  </footer>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+"use strict";
+const DATA = {"schema_version": 1, "company": {"id": 3655246, "name": "ドットエフ株式会社"}, "fiscal_year": {"label": "2026年11月期", "start_date": "2025-12-01", "end_date": "2026-11-30"}, "fetched_at": "2026-07-22", "opening_cash": 3234712, "actual_months": [{"month": "2025-12", "sales": 10288442, "cogs": 0, "sga": 4530530, "operating_profit": 5757912, "non_op_income": 443134, "non_op_expense": 56049, "ordinary_profit": 6144997, "net_income": 6144997, "gross_profit": 10288442, "cash_end": 6138245, "up_to_date": true}, {"month": "2026-01", "sales": 4468550, "cogs": 0, "sga": 5188697, "operating_profit": -720147, "non_op_income": -92656, "non_op_expense": 55314, "ordinary_profit": -868117, "net_income": -868117, "gross_profit": 4468550, "cash_end": 2632727, "up_to_date": true}, {"month": "2026-02", "sales": 5147922, "cogs": 0, "sga": 5500682, "operating_profit": -352760, "non_op_income": 1891, "non_op_expense": 56116, "ordinary_profit": -406985, "net_income": -406985, "gross_profit": 5147922, "cash_end": 6777780, "up_to_date": true}, {"month": "2026-03", "sales": 5503668, "cogs": 0, "sga": 5039935, "operating_profit": 463733, "non_op_income": 3366, "non_op_expense": 8074, "ordinary_profit": 459025, "net_income": 459025, "gross_profit": 5503668, "cash_end": 3302797, "up_to_date": true}, {"month": "2026-04", "sales": 2890839, "cogs": 0, "sga": 3753056, "operating_profit": -862217, "non_op_income": 69435, "non_op_expense": 6257, "ordinary_profit": -799039, "net_income": -799039, "gross_profit": 2890839, "cash_end": 758734, "up_to_date": true}, {"month": "2026-05", "sales": 2234883, "cogs": 0, "sga": 4586955, "operating_profit": -2352072, "non_op_income": 69162, "non_op_expense": 0, "ordinary_profit": -2282910, "net_income": -2282910, "gross_profit": 2234883, "cash_end": 3349430, "up_to_date": true}, {"month": "2026-06", "sales": 901403, "cogs": 0, "sga": 2105027, "operating_profit": -1203624, "non_op_income": 196, "non_op_expense": 0, "ordinary_profit": -1203428, "net_income": -1203428, "gross_profit": 901403, "cash_end": 908118, "up_to_date": true}], "prev_year_months": [{"month": "2024-12", "sales": 0, "operating_profit": -1246697}, {"month": "2025-01", "sales": 0, "operating_profit": -1112068}, {"month": "2025-02", "sales": 0, "operating_profit": -628734}, {"month": "2025-03", "sales": 0, "operating_profit": -1766921}, {"month": "2025-04", "sales": 0, "operating_profit": -672082}, {"month": "2025-05", "sales": 0, "operating_profit": -708600}, {"month": "2025-06", "sales": 0, "operating_profit": -647821}, {"month": "2025-07", "sales": 0, "operating_profit": -662294}, {"month": "2025-08", "sales": 0, "operating_profit": -431968}, {"month": "2025-09", "sales": 0, "operating_profit": -180963}, {"month": "2025-10", "sales": 0, "operating_profit": -174354}, {"month": "2025-11", "sales": 0, "operating_profit": -623869}], "wallets": [{"name": "GMOあおぞらネット*3871", "type": "bank_account", "balance": 265169}, {"name": "みずほ銀行", "type": "bank_account", "balance": 281046}, {"name": "GMOあおぞらネット*5138", "type": "bank_account", "balance": 0}, {"name": "現金", "type": "wallet", "balance": 403732}, {"name": "3251", "type": "wallet", "balance": 0}, {"name": "5027", "type": "wallet", "balance": 0}, {"name": "モバイルSuica（JE80F321071010157）", "type": "wallet", "balance": 8476}, {"name": "1504（mnmk）", "type": "wallet", "balance": 0}]};
+
+/* ---------- ユーティリティ ---------- */
+const yen = n => (n < 0 ? "-" : "") + Math.abs(Math.round(n)).toLocaleString("ja-JP");
+const mio = n => (n / 1e6).toLocaleString("ja-JP", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const monthLabel = m => { const [y, mo] = m.split("-"); return `${y}/${Number(mo)}`; };
+const shortLabel = m => `${Number(m.split("-")[1])}月`;
+
+function fiscalMonths(startDate, endDate) {
+  const out = [];
+  let [y, m] = startDate.split("-").map(Number);
+  const [ey, em] = endDate.split("-").map(Number);
+  while (y < ey || (y === ey && m <= em)) {
+    out.push(`${y}-${String(m).padStart(2, "0")}`);
+    m++; if (m > 12) { m = 1; y++; }
+  }
+  return out;
+}
+
+/* ---------- 実績の派生値 ---------- */
+function deriveActuals(data) {
+  const a = data.actual_months;
+  return a.map((r, i) => {
+    const prevCash = i === 0 ? data.opening_cash : a[i - 1].cash_end;
+    return { ...r, net_cf: r.cash_end - prevCash, cost: r.cogs + r.sga };
+  });
+}
+
+/* ---------- 前提の初期値算定 ---------- */
+function fitCostStructure(actuals) {
+  const n = actuals.length;
+  const xs = actuals.map(r => r.sales), ys = actuals.map(r => r.cost);
+  const mx = xs.reduce((s, v) => s + v, 0) / n;
+  const my = ys.reduce((s, v) => s + v, 0) / n;
+  let v, F;
+  const varx = xs.reduce((s, v2) => s + (v2 - mx) ** 2, 0);
+  if (n >= 3 && varx > 0) {
+    const cov = xs.reduce((s, v2, i) => s + (v2 - mx) * (ys[i] - my), 0);
+    v = cov / varx;
+    F = my - v * mx;
+  }
+  if (v === undefined || !isFinite(v) || v < 0 || v > 1 || F < 0) {
+    v = mx > 0 ? Math.min(1, Math.max(0, my / mx)) : 0;
+    F = 0;
+  }
+  return { varRatio: v, fixed: Math.round(F) };
+}
+
+function defaultAssumptions(data, actuals) {
+  const { varRatio, fixed } = fitCostStructure(actuals);
+  const adj = Math.round(actuals.reduce((s, r) => s + (r.net_cf - r.operating_profit), 0) / actuals.length);
+  const hasPrev = (data.prev_year_months || []).some(r => r.sales > 0);
+  return {
+    mode: hasPrev ? "yoy" : "flat",
+    growthPct: 0,
+    varRatio: Math.round(varRatio * 1000) / 10,   // %
+    fixed,
+    adj
+  };
+}
+
+/* ---------- 予測計算（純関数） ---------- */
+function computeForecast(data, actuals, asm) {
+  const allMonths = fiscalMonths(data.fiscal_year.start_date, data.fiscal_year.end_date);
+  const lastIdx = actuals.length - 1;
+  const fcMonths = allMonths.slice(lastIdx + 1);
+  const recent = actuals.slice(-3);
+  const avg3 = recent.reduce((s, r) => s + r.sales, 0) / Math.max(1, recent.length);
+
+  // 前年同月モードの成長率: 今期実績累計 ÷ 前期の同月範囲累計
+  const prev = data.prev_year_months || [];
+  const prevByIdx = prev.map(r => r); // 会計月順で並んでいる前提
+  let yoyGrowth = 1;
+  if (prev.length > 0) {
+    const prevSum = actuals.reduce((s, _, i) => s + (prevByIdx[i] ? prevByIdx[i].sales : 0), 0);
+    const curSum = actuals.reduce((s, r) => s + r.sales, 0);
+    if (prevSum > 0) yoyGrowth = curSum / prevSum;
+  }
+
+  const v = asm.varRatio / 100, F = asm.fixed, C = asm.adj;
+  let cash = actuals[lastIdx].cash_end;
+  const rows = fcMonths.map((m, k) => {
+    const fiscalIdx = lastIdx + 1 + k;
+    let sales;
+    if (asm.mode === "yoy" && prevByIdx[fiscalIdx] && prevByIdx[fiscalIdx].sales > 0) {
+      sales = prevByIdx[fiscalIdx].sales * yoyGrowth;
+    } else if (asm.mode === "manual") {
+      sales = avg3 * Math.pow(1 + asm.growthPct / 100, k + 1);
+    } else {
+      sales = avg3;
+    }
+    sales = Math.round(sales);
+    const cost = Math.round(F + v * sales);
+    const op = sales - cost;
+    const cf = op + C;
+    cash += cf;
+    return { month: m, sales, cost, operating_profit: op, net_cf: cf, cash_end: cash };
+  });
+  return { months: fcMonths, rows, yoyGrowth, avg3 };
+}
+
+/* ---------- SVGチャート描画 ---------- */
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function niceTicks(min, max, count) {
+  if (min === max) { max = min + 1; }
+  const span = max - min;
+  const step0 = span / count;
+  const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  let step = mag;
+  for (const m of [1, 2, 2.5, 5, 10]) { if (mag * m >= step0) { step = mag * m; break; } }
+  const lo = Math.floor(min / step) * step;
+  const hi = Math.ceil(max / step) * step;
+  const ticks = [];
+  for (let t = lo; t <= hi + step / 1e6; t += step) ticks.push(Math.round(t * 1e6) / 1e6);
+  return { lo, hi, ticks };
+}
+
+const tooltipEl = document.getElementById("tooltip");
+function bindTip(target, holder, html) {
+  target.addEventListener("mousemove", ev => {
+    tooltipEl.innerHTML = html;
+    tooltipEl.style.display = "block";
+    tooltipEl.style.left = ev.pageX + "px";
+    tooltipEl.style.top = ev.pageY + "px";
+  });
+  target.addEventListener("mouseleave", () => { tooltipEl.style.display = "none"; });
+}
+
+/*
+ * 汎用チャート: カテゴリX軸 + 棒/折れ線シリーズ
+ * series: {type:'bar'|'line', values:[num|null], color, dashed?, name, tipName}
+ */
+function renderChart(holderId, labels, series, opts = {}) {
+  const holder = document.getElementById(holderId);
+  holder.innerHTML = "";
+  const W = 960, H = opts.height || 300;
+  const pad = { top: 14, right: 16, bottom: 30, left: 56 };
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" }, holder);
+
+  let vals = [];
+  series.forEach(s => s.values.forEach(v => { if (v !== null && v !== undefined) vals.push(v); }));
+  if (!vals.length) vals = [0, 1];
+  let vmin = Math.min(0, ...vals), vmax = Math.max(0, ...vals);
+  const { lo, hi, ticks } = niceTicks(vmin, vmax, 5);
+  const plotW = W - pad.left - pad.right, plotH = H - pad.top - pad.bottom;
+  const y = v => pad.top + plotH * (1 - (v - lo) / (hi - lo));
+  const bandW = plotW / labels.length;
+  const xc = i => pad.left + bandW * (i + 0.5);
+
+  // グリッド・Y軸目盛（百万円）
+  ticks.forEach(t => {
+    el("line", { x1: pad.left, x2: W - pad.right, y1: y(t), y2: y(t), stroke: t === 0 ? "var(--baseline)" : "var(--grid)", "stroke-width": 1 }, svg);
+    const txt = el("text", { x: pad.left - 8, y: y(t) + 4, "text-anchor": "end", "font-size": 11, fill: "var(--ink-muted)" }, svg);
+    txt.textContent = (t / 1e6).toLocaleString("ja-JP");
+  });
+  // X軸ラベル
+  labels.forEach((lb, i) => {
+    const txt = el("text", { x: xc(i), y: H - 10, "text-anchor": "middle", "font-size": 11, fill: "var(--ink-muted)" }, svg);
+    txt.textContent = lb;
+  });
+
+  const barSeries = series.filter(s => s.type === "bar");
+  const nBars = barSeries.length;
+  const barW = Math.min(24, (bandW - 8) / Math.max(1, nBars) - 2);
+
+  series.forEach(s => {
+    if (s.type !== "bar") return;
+    const bi = barSeries.indexOf(s);
+    const groupW = nBars * barW + (nBars - 1) * 2;
+    s.values.forEach((v, i) => {
+      if (v === null || v === undefined) return;
+      const x0 = xc(i) - groupW / 2 + bi * (barW + 2);
+      const y0 = y(Math.max(0, v)), y1 = y(Math.min(0, v));
+      const h = Math.max(1, y1 - y0);
+      const r = Math.min(4, barW / 2, h);
+      // データ端のみ4px角丸、基準線側は直角
+      let d;
+      if (v >= 0) {
+        d = `M${x0},${y1} L${x0},${y0 + r} Q${x0},${y0} ${x0 + r},${y0} L${x0 + barW - r},${y0} Q${x0 + barW},${y0} ${x0 + barW},${y0 + r} L${x0 + barW},${y1} Z`;
+      } else {
+        d = `M${x0},${y0} L${x0 + barW},${y0} L${x0 + barW},${y1 - r} Q${x0 + barW},${y1} ${x0 + barW - r},${y1} L${x0 + r},${y1} Q${x0},${y1} ${x0},${y1 - r} Z`;
+      }
+      const color = typeof s.color === "function" ? s.color(v, i) : s.color;
+      const p = el("path", { d, fill: color }, svg);
+      bindTip(p, holder, `<div class="tt-title">${monthLabel(labels._months ? labels._months[i] : "")}${s.tipName ? "・" + s.tipName : ""}</div><div>${s.name}: ${yen(v)}円</div>`);
+    });
+  });
+
+  series.forEach(s => {
+    if (s.type !== "line") return;
+    let d = "", started = false;
+    const pts = [];
+    s.values.forEach((v, i) => {
+      if (v === null || v === undefined) { started = false; return; }
+      d += (started ? " L" : " M") + xc(i) + "," + y(v);
+      started = true;
+      pts.push([xc(i), y(v), v, i]);
+    });
+    el("path", {
+      d, fill: "none", stroke: s.color, "stroke-width": 2,
+      "stroke-linecap": "round", "stroke-linejoin": "round",
+      ...(s.dashed ? { "stroke-dasharray": "6 5" } : {})
+    }, svg);
+    if (s.markers !== false) pts.forEach(([px, py, v, i]) => {
+      el("circle", { cx: px, cy: py, r: 5.5, fill: "var(--surface)" }, svg);
+      const c = el("circle", { cx: px, cy: py, r: 4, fill: s.color }, svg);
+      bindTip(c, holder, `<div class="tt-title">${monthLabel(labels._months ? labels._months[i] : "")}</div><div>${s.name}: ${yen(v)}円</div>`);
+    });
+  });
+}
+
+function legend(id, items) {
+  document.getElementById(id).innerHTML = items.map(it =>
+    it.line
+      ? `<span class="key"><span class="line-key${it.dashed ? " dashed" : ""}" style="border-color:${it.color}"></span>${it.name}</span>`
+      : `<span class="key"><span class="swatch" style="background:${it.color}"></span>${it.name}</span>`
+  ).join("");
+}
+
+/* ---------- メイン描画 ---------- */
+const actuals = deriveActuals(DATA);
+const DEFAULTS = defaultAssumptions(DATA, actuals);
+let asm = { ...DEFAULTS };
+
+const allMonths = fiscalMonths(DATA.fiscal_year.start_date, DATA.fiscal_year.end_date);
+const lastActualMonth = actuals[actuals.length - 1].month;
+
+function readInputs() {
+  asm.mode = document.getElementById("inpMode").value;
+  asm.growthPct = Number(document.getElementById("inpGrowth").value) || 0;
+  asm.varRatio = Number(document.getElementById("inpVar").value) || 0;
+  asm.fixed = Number(document.getElementById("inpFixed").value) || 0;
+  asm.adj = Number(document.getElementById("inpAdj").value) || 0;
+  document.getElementById("rowGrowth").style.display = asm.mode === "manual" ? "" : "none";
+}
+function writeInputs() {
+  document.getElementById("inpMode").value = asm.mode;
+  document.getElementById("inpGrowth").value = Math.round(asm.growthPct * 10) / 10;
+  document.getElementById("inpVar").value = Math.round(asm.varRatio * 10) / 10;
+  document.getElementById("inpFixed").value = Math.round(asm.fixed);
+  document.getElementById("inpAdj").value = Math.round(asm.adj);
+  document.getElementById("rowGrowth").style.display = asm.mode === "manual" ? "" : "none";
+}
+
+function rerender() {
+  const fc = computeForecast(DATA, actuals, asm);
+  const labels = allMonths.map(shortLabel);
+  labels._months = allMonths;
+  const nA = actuals.length;
+
+  const pad = arr => arr.concat(Array(allMonths.length - arr.length).fill(null));
+  const actSales = pad(actuals.map(r => r.sales));
+  const fcSales = Array(nA).fill(null).concat(fc.rows.map(r => r.sales));
+  const prevSales = (DATA.prev_year_months || []).map(r => r.sales);
+  const actOp = pad(actuals.map(r => r.operating_profit));
+  const fcOp = Array(nA).fill(null).concat(fc.rows.map(r => r.operating_profit));
+  const prevOp = (DATA.prev_year_months || []).map(r => r.operating_profit);
+  const actCash = pad(actuals.map(r => r.cash_end));
+  const fcCashLine = actCash.map((v, i) => i === nA - 1 ? v : null)
+    .map((v, i) => i >= nA ? fc.rows[i - nA].cash_end : v);
+  const actCF = pad(actuals.map(r => r.net_cf));
+  const fcCF = Array(nA).fill(null).concat(fc.rows.map(r => r.net_cf));
+
+  const hasPrev = prevSales.length > 0;
+
+  renderChart("chartSales", labels, [
+    { type: "bar", values: actSales, color: "var(--blue)", name: "売上高", tipName: "実績" },
+    { type: "bar", values: fcSales, color: "var(--blue-light)", name: "売上高", tipName: "予測" },
+    ...(hasPrev ? [{ type: "line", values: pad(prevSales), color: "var(--ink-muted)", name: "前期売上高", markers: false }] : [])
+  ]);
+  legend("legendSales", [
+    { name: "今期実績", color: "var(--blue)" },
+    { name: "予測", color: "var(--blue-light)" },
+    ...(hasPrev ? [{ name: "前期同月", color: "var(--ink-muted)", line: true }] : [])
+  ]);
+
+  renderChart("chartOp", labels, [
+    { type: "bar", values: actOp, color: "var(--blue)", name: "営業利益", tipName: "実績" },
+    { type: "bar", values: fcOp, color: "var(--blue-light)", name: "営業利益", tipName: "予測" },
+    ...(hasPrev ? [{ type: "line", values: pad(prevOp), color: "var(--ink-muted)", name: "前期営業利益", markers: false }] : [])
+  ]);
+  legend("legendOp", [
+    { name: "今期実績", color: "var(--blue)" },
+    { name: "予測", color: "var(--blue-light)" },
+    ...(hasPrev ? [{ name: "前期同月", color: "var(--ink-muted)", line: true }] : [])
+  ]);
+
+  renderChart("chartCash", labels, [
+    { type: "line", values: actCash, color: "var(--blue)", name: "現預金残高（実績）" },
+    { type: "line", values: fcCashLine, color: "var(--blue-mid)", dashed: true, name: "現預金残高（予測）" }
+  ], { height: 280 });
+  legend("legendCash", [
+    { name: "実績", color: "var(--blue)", line: true },
+    { name: "予測", color: "var(--blue-mid)", line: true, dashed: true }
+  ]);
+
+  renderChart("chartCF", labels, [
+    { type: "bar", values: actCF, color: v => v >= 0 ? "var(--blue)" : "var(--red)", name: "純CF", tipName: "実績" },
+    { type: "bar", values: fcCF, color: v => v >= 0 ? "var(--blue-light)" : "var(--red-light)", name: "純CF", tipName: "予測" }
+  ], { height: 260 });
+  legend("legendCF", [
+    { name: "実績（プラス）", color: "var(--blue)" },
+    { name: "実績（マイナス）", color: "var(--red)" },
+    { name: "予測（プラス）", color: "var(--blue-light)" },
+    { name: "予測（マイナス）", color: "var(--red-light)" }
+  ]);
+
+  renderForecastTable(fc);
+  renderKpis(fc);
+  renderAlerts(fc);
+  renderModeHint(fc);
+}
+
+function renderModeHint(fc) {
+  const h = document.getElementById("hintMode");
+  if (asm.mode === "yoy") {
+    h.textContent = `今期実績は前年同期間比 ${(fc.yoyGrowth * 100 - 100).toFixed(1)}% 増減。この成長率を前年同月に掛けて予測します。`;
+  } else if (asm.mode === "flat") {
+    h.textContent = `直近3ヶ月平均 ${mio(fc.avg3)}百万円で横ばいと仮定します。`;
+  } else {
+    h.textContent = `直近3ヶ月平均 ${mio(fc.avg3)}百万円を起点にします。`;
+  }
+}
+
+function renderKpis(fc) {
+  const cumSales = actuals.reduce((s, r) => s + r.sales, 0);
+  const cumOp = actuals.reduce((s, r) => s + r.operating_profit, 0);
+  const prev = DATA.prev_year_months || [];
+  const prevCumSales = actuals.reduce((s, _, i) => s + (prev[i] ? prev[i].sales : 0), 0);
+  const lastCash = actuals[actuals.length - 1].cash_end;
+  const avgCF = actuals.reduce((s, r) => s + r.net_cf, 0) / actuals.length;
+  const avg3Sales = actuals.slice(-3).reduce((s, r) => s + r.sales, 0) / Math.min(3, actuals.length);
+  const runway = avg3Sales > 0 ? lastCash / avg3Sales : null;
+  const landSales = cumSales + fc.rows.reduce((s, r) => s + r.sales, 0);
+  const landOp = cumOp + fc.rows.reduce((s, r) => s + r.operating_profit, 0);
+
+  const yoyBadge = (prev.length && prevCumSales > 0)
+    ? (() => { const p = (cumSales / prevCumSales - 1) * 100; return `<span class="${p >= 0 ? "delta-up" : "delta-down"}">${p >= 0 ? "+" : ""}${p.toFixed(1)}%</span> 前年同期比`; })()
+    : "";
+
+  const cards = [
+    { label: `今期累計売上（${actuals.length}ヶ月）`, value: mio(cumSales) + " 百万円", sub: yoyBadge },
+    { label: "今期累計営業利益", value: mio(cumOp) + " 百万円", sub: `営業利益率 ${cumSales > 0 ? (cumOp / cumSales * 100).toFixed(1) : "-"}%` },
+    { label: `現預金残高（${monthLabel(lastActualMonth)}末）`, value: mio(lastCash) + " 百万円", sub: "" },
+    { label: "月平均純キャッシュフロー（実績）", value: (avgCF < 0 ? "-" : "+") + mio(Math.abs(avgCF)) + " 百万円", sub: "" },
+    { label: "資金月商倍率", value: runway !== null ? runway.toFixed(1) + " ヶ月分" : "-", sub: "現預金 ÷ 直近3ヶ月平均月商" },
+    { label: "通期着地見込み（予測込み）", value: mio(landSales) + " 百万円", sub: `営業利益 ${mio(landOp)} 百万円` }
+  ];
+  document.getElementById("kpiCards").innerHTML = cards.map(c =>
+    `<div class="card"><div class="label">${c.label}</div><div class="value">${c.value}</div><div class="sub">${c.sub}</div></div>`
+  ).join("");
+}
+
+function renderForecastTable(fc) {
+  const t = document.getElementById("fcTable");
+  const head = `<tr><th>月</th><th>売上高</th><th>営業費用</th><th>営業利益</th><th>純CF</th><th>期末預金残高</th></tr>`;
+  const rows = fc.rows.map(r => `
+    <tr>
+      <td>${monthLabel(r.month)}<span class="fc-badge">予測</span></td>
+      <td>${yen(r.sales)}</td>
+      <td>${yen(r.cost)}</td>
+      <td class="${r.operating_profit < 0 ? "neg" : ""}">${yen(r.operating_profit)}</td>
+      <td class="${r.net_cf < 0 ? "neg" : ""}">${yen(r.net_cf)}</td>
+      <td class="${r.cash_end < 0 ? "neg-cash" : ""}">${yen(r.cash_end)}</td>
+    </tr>`).join("");
+  const landSales = actuals.reduce((s, r) => s + r.sales, 0) + fc.rows.reduce((s, r) => s + r.sales, 0);
+  const landOp = actuals.reduce((s, r) => s + r.operating_profit, 0) + fc.rows.reduce((s, r) => s + r.operating_profit, 0);
+  const endCash = fc.rows.length ? fc.rows[fc.rows.length - 1].cash_end : actuals[actuals.length - 1].cash_end;
+  const total = `<tr class="total-row"><td>通期着地見込み</td><td>${yen(landSales)}</td><td></td><td class="${landOp < 0 ? "neg" : ""}">${yen(landOp)}</td><td></td><td class="${endCash < 0 ? "neg-cash" : ""}">${yen(endCash)}</td></tr>`;
+  t.innerHTML = head + rows + total;
+  document.getElementById("fcTableSub").textContent =
+    `実績は${monthLabel(lastActualMonth)}まで。以降${fc.rows.length}ヶ月を上記前提で試算（単位: 円）。`;
+}
+
+function renderActualTable() {
+  const t = document.getElementById("actualTable");
+  const head = `<tr><th>月</th><th>売上高</th><th>売上原価</th><th>販管費</th><th>営業利益</th><th>経常利益</th><th>純CF</th><th>月末現預金</th></tr>`;
+  const rows = actuals.map(r => `
+    <tr>
+      <td>${monthLabel(r.month)}${r.up_to_date === false ? '<span class="fc-badge">集計中</span>' : ""}</td>
+      <td>${yen(r.sales)}</td><td>${yen(r.cogs)}</td><td>${yen(r.sga)}</td>
+      <td class="${r.operating_profit < 0 ? "neg" : ""}">${yen(r.operating_profit)}</td>
+      <td class="${r.ordinary_profit < 0 ? "neg" : ""}">${yen(r.ordinary_profit)}</td>
+      <td class="${r.net_cf < 0 ? "neg" : ""}">${yen(r.net_cf)}</td>
+      <td>${yen(r.cash_end)}</td>
+    </tr>`).join("");
+  const sum = k => actuals.reduce((s, r) => s + r[k], 0);
+  const total = `<tr class="total-row"><td>累計</td><td>${yen(sum("sales"))}</td><td>${yen(sum("cogs"))}</td><td>${yen(sum("sga"))}</td><td class="${sum("operating_profit") < 0 ? "neg" : ""}">${yen(sum("operating_profit"))}</td><td>${yen(sum("ordinary_profit"))}</td><td>${yen(sum("net_cf"))}</td><td></td></tr>`;
+  t.innerHTML = head + rows + total;
+}
+
+function renderWallets() {
+  const t = document.getElementById("walletTable");
+  const ws = DATA.wallets || [];
+  const typeName = { bank_account: "銀行口座", credit_card: "クレジットカード", wallet: "その他" };
+  const head = `<tr><th>口座</th><th>種別</th><th>残高</th></tr>`;
+  const rows = ws.map(w => `<tr><td>${w.name}</td><td style="text-align:left">${typeName[w.type] || w.type || ""}</td><td class="${w.balance < 0 ? "neg" : ""}">${yen(w.balance)}</td></tr>`).join("");
+  const total = `<tr class="total-row"><td>合計</td><td></td><td>${yen(ws.reduce((s, w) => s + w.balance, 0))}</td></tr>`;
+  t.innerHTML = head + rows + total;
+  document.getElementById("walletSub").textContent =
+    `freee連携口座の登録残高（${DATA.fetched_at}取得時点）。帳簿上の現金及び預金残高とは範囲が異なる場合があります。`;
+}
+
+function renderAlerts(fc) {
+  const area = document.getElementById("alertArea");
+  const negMonths = fc.rows.filter(r => r.cash_end < 0);
+  area.innerHTML = negMonths.length
+    ? `<div class="warn-box">現在の前提では、${negMonths.map(r => monthLabel(r.month)).join("、")} に預金残高がマイナスとなる試算です。資金計画のご確認をおすすめします。</div>`
+    : "";
+  const stale = actuals.filter(r => r.up_to_date === false);
+  const noteEl = document.getElementById("noteUpToDate");
+  if (stale.length) {
+    noteEl.style.display = "";
+    noteEl.textContent = `${stale.map(r => monthLabel(r.month)).join("、")} はfreee側の集計が最新化されていない可能性があります。`;
+  }
+}
+
+/* ---------- 初期化 ---------- */
+document.getElementById("companyTitle").textContent = DATA.company.name + " 財務ダッシュボード";
+document.getElementById("fyLabel").textContent = DATA.fiscal_year.label + `（${DATA.fiscal_year.start_date} 〜 ${DATA.fiscal_year.end_date}）`;
+document.getElementById("fetchedAt").textContent = "データ基準日 " + DATA.fetched_at;
+
+writeInputs();
+["inpMode", "inpGrowth", "inpVar", "inpFixed", "inpAdj"].forEach(id => {
+  document.getElementById(id).addEventListener("input", () => { readInputs(); rerender(); });
+});
+document.getElementById("btnReset").addEventListener("click", () => { asm = { ...DEFAULTS }; writeInputs(); rerender(); });
+
+renderActualTable();
+renderWallets();
+rerender();
+</script>
+</body>
+</html>
